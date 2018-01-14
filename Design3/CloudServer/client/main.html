@@ -1,0 +1,19 @@
+<head>
+    <title>simple</title>
+</head>
+
+<body>
+<h1>Cloud Server</h1>
+
+{{> list}}
+</body>
+
+<template name="list">
+    <ol>
+        {{#each items}}
+            <li>{{_id}}</li>
+        {{/each}}
+        <br>
+        <a href="#" class="add">Add</a>
+    </ol>
+</template>
