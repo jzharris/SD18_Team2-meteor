@@ -26,7 +26,7 @@ Meteor.startup(() => {
         return Status.find();
     });
 
-    a = new ServerSyncClient("http://localhost:3000", {
+    a = new ServerSyncClient("https://heroku-cloud3.herokuapp.com/", {
         onConnect: function() {
             console.log("connected to master");
         },
