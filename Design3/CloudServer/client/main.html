@@ -9,11 +9,29 @@
 </body>
 
 <template name="list">
+    <!--<ol>-->
+        <!--{{#each items}}-->
+            <!--<li>{{_id}}</li>-->
+        <!--{{/each}}-->
+        <!--<br>-->
+        <!--<a href="#" class="add">Add</a>-->
+    <!--</ol>-->
+
     <ol>
         {{#each items}}
-            <li>{{_id}}</li>
+            <li>
+                sent: {{getSent}} | received: {{getReceived}} | dt: <span style="color:{{getOrigin}}">{{dt}}</span>
+            </li>
         {{/each}}
         <br>
-        <a href="#" class="add">Add</a>
+        <a href="#" class="add">Add</a> | <a href="#" class="reset">Clear</a>
     </ol>
+
+    <br>
+    {{#if cloudAvg}}
+        cloud update avg: <span style="color:{{getCloudColor}}">{{cloudAvg}}</span><br>
+    {{/if}}
+    {{#if fogAvg}}
+        fog update avg: <span style="color:{{getFogColor}}">{{fogAvg}}</span><br>
+    {{/if}}
 </template>

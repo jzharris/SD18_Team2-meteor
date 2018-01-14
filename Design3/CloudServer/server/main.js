@@ -15,4 +15,15 @@ Meteor.startup(() => {
             return Items.find();
         }
     });
+
+    Meteor.publish('timing', function() {
+        return Timing.find();
+    });
+});
+
+Meteor.methods({
+    'reset': function() {
+        Timing.remove({});
+        Items.remove({});
+    }
 });

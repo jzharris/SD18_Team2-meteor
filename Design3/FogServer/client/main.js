@@ -5,6 +5,7 @@ import './main.html';
 
 // Items = new Mongo.Collection('items');
 window.Items = Items;
+window.Timing = Timing; //necessary?
 
 let blackColor = '#000000';
 let cloudColor = '#314bb9';
@@ -40,7 +41,7 @@ Template.list.events({
     },
     'click a.reset': function() {
         Meteor.call('reset');
-    }
+    },
 });
 
 Template.list.helpers({

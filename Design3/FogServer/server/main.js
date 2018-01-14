@@ -26,7 +26,22 @@ Meteor.startup(() => {
         return Status.find();
     });
 
-    a = new ServerSyncClient("https://heroku-cloud3.herokuapp.com/", {
+    a = new ServerSyncClient("https://heroku-cloud3.herokuapp.com/", { //"http://localhost:3000"
+        onConnect: function() {
+            console.log("connected to master");
+        },
+        onReconnect: function() {
+            console.log("reconnected to master");
+        },
+        beforeSyncDirty: function(count) {
+            console.log("beforeSyncDirty", count);
+        },
+        afterSyncDirty: function(count) {
+            console.log("afterSyncDirty", count);
+        }
+    });
+
+    b = new ServerSyncClient("http://localhost:3000", { //"https://heroku-cloud3.herokuapp.com/"
         onConnect: function() {
             console.log("connected to master");
         },
@@ -83,6 +98,27 @@ Meteor.startup(() => {
 
         // args: [Date.now()] // testing selective publications: only get
         // items newer than our start time
+    });
+
+    b.sync('timing', {
+        mode: "write",
+        collection: Timing,
+        onReady: function() {
+            const coll = a.getCollection('items');
+            console.log("ready", coll.find().count());
+        },
+        beforeSyncUp: function(type, id, doc) {
+            console.log("beforeSyncUp", type, id, doc);
+        },
+        beforeSyncDown: function(type, id, doc) {
+            console.log("beforeSyncDown", type, id, doc);
+        },
+        afterSyncUp: function(type, id, doc) {
+            console.log("afterSyncUp", type, id, doc);
+        },
+        afterSyncDown: function(type, id, doc) {
+            console.log("afterSyncDown", type, id, doc);
+        },
     });
 });
 
