@@ -1,34 +1,33 @@
 import { Template } from 'meteor/templating';
-import { ReactiveVar } from 'meteor/reactive-var';
 
 import './main.html';
-
-// Items = new Mongo.Collection('items');
-window.Items = Items;
 
 let blackColor = '#000000';
 let cloudColor = '#314bb9';
 let fogColor = '#1a9e0b';
 
 Template.list.onCreated(function() {
-    Meteor.subscribe('items');
     Meteor.subscribe('status');
+    Meteor.subscribe('nodes');
+    Meteor.subscribe('tags');
+
+    //start sending data every minute
+    Meteor.setInterval(function() {
+
+        console.log("inserting");
+        Nodes.insert(node());
+
+    }, 60000);
 });
 
 
 Template.list.events({
     'click div.delete': function() {
-        Items.remove(this._id);
+        Nodes.remove(this._id);
     },
     'click div.add': function() {
-        Items.insert({data: 0});
+        Nodes.insert(node());
     },
-    // 'click a.start': function() {
-    //     Items.update(this._id, {$set: {start: Date.now()}});
-    // },
-    // 'click a.end': function() {
-    //     Items.update(this._id, {$set: {end: Date.now()}});
-    // },
 
     'click div.disconnect': function() {
         Meteor.call('disconnect');
@@ -43,16 +42,16 @@ Template.list.events({
 
 Template.list.helpers({
     inLog() {
-        return Items.findOne({sent: {$exists : true}});
+        return Nodes.findOne({sent: {$exists : true}});
     },
     items() {
-        return Items.find({sent: {$exists : true}}, {sort: {sent: 1}});
+        return Nodes.find({sent: {$exists : true}}, {sort: {sent: 1}});
     },
     inQueue() {
-        return Items.findOne({sent: {$exists : false}});
+        return Nodes.findOne({sent: {$exists : false}});
     },
     waiting() {
-        return Items.find({sent: {$exists : false}});
+        return Nodes.find({sent: {$exists : false}});
     },
     getOrigin() {
         return this.origin ? (this.origin === 'cloud' ? cloudColor : fogColor) : blackColor;
@@ -74,7 +73,7 @@ Template.list.helpers({
 
     cloudAvg() {
         let sum = 0, i = 0;
-        let cloud = Items.find({origin: 'cloud'}).fetch();
+        let cloud = Nodes.find({origin: 'cloud'}).fetch();
         for(let t in cloud) {
             if(cloud[t].received && cloud[t].sent) {
                 let dt = cloud[t].received - cloud[t].sent;
@@ -86,7 +85,7 @@ Template.list.helpers({
     },
     fogAvg() {
         let sum = 0, i = 0;
-        let fog = Items.find({origin : 'fog'}).fetch();
+        let fog = Nodes.find({origin : 'fog'}).fetch();
         for(let t in fog) {
             if(fog[t].received && fog[t].sent) {
                 sum += fog[t].received - fog[t].sent;

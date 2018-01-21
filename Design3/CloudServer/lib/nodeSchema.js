@@ -12,13 +12,17 @@ NodeSchema = new SimpleSchema({
         type: String,
         label: "Node type"
     },
-    timeSent: {
+    sent: {
         type: Date,
         label: "Time sent from fog server"
     },
-    timeReceive: {
+    received: {
         type: Date,
         label: "Time received by cloud server"
+    },
+    origin: {
+        type: String,
+        label: "Origin of item"
     },
     configuration: {
         type: Object,

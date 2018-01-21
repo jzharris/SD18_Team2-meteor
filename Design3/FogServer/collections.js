@@ -1,5 +1,5 @@
-// only usable in "read" mode
-Items = new Mongo.Collection('myitems');
+import { Mongo } from "meteor/mongo";
+
 Status = new Mongo.Collection('status');
 
 Nodes = new Mongo.Collection('nodes');

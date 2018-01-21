@@ -10,8 +10,8 @@ let sentLog = {};
 Meteor.startup(() => {
     // code to run on server at startup
 
-    Meteor.publish('items', function() {
-        return Items.find();
+    Meteor.publish('nodes', function() {
+        return Nodes.find();
     });
 
     Status.remove({});
@@ -43,17 +43,19 @@ Meteor.startup(() => {
     });
 
     console.log("sync");
-    a.sync('items', {
+    a.sync('nodes', {
         // mode: "read",
         mode: "write",
-        collection: Items,
+        collection: Nodes,
         onReady: function() {
-            const coll = a.getCollection('items');
+            const coll = a.getCollection('nodes');
             console.log("ready", coll.find().count());
         },
         beforeSyncUp: function(type, id, doc) {
             console.log("beforeSyncUp", type, id, doc);
-            if(doc && doc.hasOwnProperty('sent') && doc.hasOwnProperty('received')) {
+            if(type === 'remove') {
+                //removing item, do nothing else
+            } else if(doc && doc.hasOwnProperty('sent') && doc.hasOwnProperty('received')) {
                 //updating internal times, do nothing
             } else {
                 //new item, log time
@@ -62,7 +64,9 @@ Meteor.startup(() => {
         },
         beforeSyncDown: function(type, id, doc) {
             console.log("beforeSyncDown", type, id, doc);
-            if(doc && doc.hasOwnProperty('sent') && doc.hasOwnProperty('received')) {
+            if(type === 'remove') {
+                //removing item, do nothing else
+            } else if(doc && doc.hasOwnProperty('sent') && doc.hasOwnProperty('received')) {
                 //updating internal times, do nothing
             } else {
                 //new item, log time
@@ -74,7 +78,7 @@ Meteor.startup(() => {
             if(sentLog[id]) {
                 const sentDate = sentLog[id];
                 delete sentLog[id];
-                Items.update({_id : id}, {$set : {sent: sentDate, received: Date.now(), origin: 'fog'}});
+                Nodes.update({_id : id}, {$set : {sent: sentDate, received: Date.now(), origin: 'fog'}});
             }
         },
         afterSyncDown: function(type, id, doc) {
@@ -82,7 +86,7 @@ Meteor.startup(() => {
             if(sentLog[id]) {
                 const sentDate = sentLog[id];
                 delete sentLog[id];
-                Items.update({_id : id}, {$set : {sent: sentDate, received: Date.now(), origin: 'cloud'}});
+                Nodes.update({_id : id}, {$set : {sent: sentDate, received: Date.now(), origin: 'cloud'}});
             }
         },
 
@@ -108,6 +112,6 @@ Meteor.methods({
         });
     },
     'reset': function() {
-        Items.remove({});
+        Nodes.remove({});
     }
 });
