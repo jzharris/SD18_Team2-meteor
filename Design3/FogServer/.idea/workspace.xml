@@ -2,23 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3de3886e-e7b1-4edb-9405-e4deaf6f4301" name="Default" comment="">
-      <change beforePath="" afterPath="$PROJECT_DIR$/../CloudServer/.idea/vcs.xml" />
-      <change beforePath="$PROJECT_DIR$/../CloudServer/.idea/libraries/meteor_packages_auto_import_browser.xml" afterPath="$PROJECT_DIR$/../CloudServer/.idea/libraries/meteor_packages_auto_import_browser.xml" />
       <change beforePath="$PROJECT_DIR$/../CloudServer/.idea/workspace.xml" afterPath="$PROJECT_DIR$/../CloudServer/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/../CloudServer/.meteor/packages" afterPath="$PROJECT_DIR$/../CloudServer/.meteor/packages" />
-      <change beforePath="$PROJECT_DIR$/../CloudServer/.meteor/versions" afterPath="$PROJECT_DIR$/../CloudServer/.meteor/versions" />
       <change beforePath="$PROJECT_DIR$/../CloudServer/client/main.html" afterPath="$PROJECT_DIR$/../CloudServer/client/main.html" />
       <change beforePath="$PROJECT_DIR$/../CloudServer/client/main.js" afterPath="$PROJECT_DIR$/../CloudServer/client/main.js" />
-      <change beforePath="$PROJECT_DIR$/../CloudServer/collections.js" afterPath="$PROJECT_DIR$/../CloudServer/collections.js" />
-      <change beforePath="$PROJECT_DIR$/../CloudServer/server/main.js" afterPath="$PROJECT_DIR$/../CloudServer/server/main.js" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/meteor_packages_auto_import_browser.xml" afterPath="$PROJECT_DIR$/.idea/libraries/meteor_packages_auto_import_browser.xml" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/.meteor/packages" afterPath="$PROJECT_DIR$/.meteor/packages" />
-      <change beforePath="$PROJECT_DIR$/.meteor/versions" afterPath="$PROJECT_DIR$/.meteor/versions" />
       <change beforePath="$PROJECT_DIR$/client/main.html" afterPath="$PROJECT_DIR$/client/main.html" />
-      <change beforePath="$PROJECT_DIR$/client/main.js" afterPath="$PROJECT_DIR$/client/main.js" />
-      <change beforePath="$PROJECT_DIR$/collections.js" afterPath="$PROJECT_DIR$/collections.js" />
-      <change beforePath="$PROJECT_DIR$/server/main.js" afterPath="$PROJECT_DIR$/server/main.js" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -55,8 +42,8 @@
       <file leaf-file-name="main.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/client/main.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="73" column="0" lean-forward="false" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+            <state relative-caret-position="846">
+              <caret line="47" column="79" lean-forward="false" selection-start-line="47" selection-start-column="79" selection-end-line="47" selection-end-column="79" />
               <folding>
                 <element signature="n#style#0;n#span#0;n#li#0;n#ol#0;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#span#0;n#li#0;n#ol#0;n#div#1;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
@@ -252,12 +239,12 @@
       <workItem from="1516309840505" duration="28000" />
       <workItem from="1516310201537" duration="587000" />
       <workItem from="1516337489039" duration="2694000" />
-      <workItem from="1516496981583" duration="5047000" />
+      <workItem from="1516496981583" duration="5273000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="22302000" />
+    <option name="totallyTimeSpent" value="22528000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1985" y="-4" width="1855" height="1204" extended-state="6" />
@@ -718,8 +705,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/client/main.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="73" column="0" lean-forward="false" selection-start-line="73" selection-start-column="0" selection-end-line="73" selection-end-column="0" />
+        <state relative-caret-position="846">
+          <caret line="47" column="79" lean-forward="false" selection-start-line="47" selection-start-column="79" selection-end-line="47" selection-end-column="79" />
           <folding>
             <element signature="n#style#0;n#span#0;n#li#0;n#ol#0;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#span#0;n#li#0;n#ol#0;n#div#1;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />

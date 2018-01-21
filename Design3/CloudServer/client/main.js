@@ -13,14 +13,14 @@ Template.list.onCreated(function() {
 });
 
 Template.list.events({
-    'click a.delete': function() {
+    'click div.delete': function() {
         Items.remove(this._id);
     },
-    'click a.add': function() {
+    'click div.add': function() {
         Items.insert({data: 0});
     },
 
-    'click a.reset': function() {
+    'click div.reset': function() {
         Meteor.call('reset');
     },
 });
