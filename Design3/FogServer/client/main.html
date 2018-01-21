@@ -1,15 +1,11 @@
 <head>
-    <title>Node client</title>
+    <title>Fog server</title>
 </head>
 
 <body>
 
 <div class="container">
     <div class="col-xs-12">
-        <div class="row">
-            <h1>Fog Server</h1>
-        </div>
-
         {{> list}}
     </div>
 </div>
@@ -19,14 +15,39 @@
 <template name="list">
 
     <div class="row">
+        <h1>Client UI
+            {{#if connected}}
+                <div class="btn btn-warning disconnect pull-right" style="margin-right: 10px;">
+                    Disconnect
+                </div>
+            {{else}}
+                <div class="btn btn-primary reconnect pull-right" style="margin-right: 10px;">
+                    Reconnect
+                </div>
+            {{/if}}
+        </h1>
+    </div>
 
-        <div class="col-md-6">
+    <div class="row">
 
+        <div class="col-md-4">
             <div class="row">
+                <h2>Nodes
+                    <div class="form form-inline pull-right" style="margin-right: 40px;">
+                        <div class="btn btn-sm btn-primary addNode">
+                            Add
+                        </div>
+                        <div class="btn btn-sm btn-danger resetNode">
+                            Clear
+                        </div>
+                    </div>
+                </h2>
+                <hr style="margin-right: 10px; margin-left: 10px;">
+
                 <h3>Queue</h3>
-                {{#if inQueue}}
+                {{#if nodeInQueue}}
                     <ol>
-                        {{#each waiting}}
+                        {{#each nodesInQueue}}
                             <li>
                                 <span style="color:{{getOrigin}}">id: {{_id}}</span>
                             </li>
@@ -41,11 +62,42 @@
 
             <div class="row">
                 <h3>Log</h3>
-                {{#if inLog}}
+                {{#if nodeInLog}}
                     <ol>
-                        {{#each items}}
+                        {{#each nodesInLog}}
                             <li>
-                                sent: {{sent}} | received: {{received}} | delay: <span style="color:{{getOrigin}}">{{dt}}</span>
+                                sent: {{sent}} | received: {{received}} <br> delay: <span style="color:{{getOrigin}}">{{dt}}</span> ms
+                            </li>
+                        {{/each}}
+                    </ol>
+                {{else}}
+                    <ul>
+                        <li>empty</li>
+                    </ul>
+                {{/if}}
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="row">
+                <h2>Tags
+                    <div class="form form-inline pull-right" style="margin-right: 40px;">
+                        <div class="btn btn-sm btn-primary addTag">
+                            Add
+                        </div>
+                        <div class="btn btn-sm btn-danger resetTag">
+                            Clear
+                        </div>
+                    </div>
+                </h2>
+                <hr style="margin-right: 10px; margin-left: 10px;">
+
+                <h3>Queue</h3>
+                {{#if tagInQueue}}
+                    <ol>
+                        {{#each tagsInQueue}}
+                            <li>
+                                <span style="color:{{getOrigin}}">id: {{_id}}</span>
                             </li>
                         {{/each}}
                     </ol>
@@ -56,47 +108,41 @@
                 {{/if}}
             </div>
 
+            <div class="row">
+                <h3>Log</h3>
+                {{#if tagInLog}}
+                    <ol>
+                        {{#each tagsInLog}}
+                            <li>
+                                sent: {{sent}} | received: {{received}} <br> delay: <span style="color:{{getOrigin}}">{{dt}}</span> ms
+                            </li>
+                        {{/each}}
+                    </ol>
+                {{else}}
+                    <ul>
+                        <li>empty</li>
+                    </ul>
+                {{/if}}
+            </div>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="row">
-                <div class="col-md-6">
-                    <h3>Collection</h3>
-                    <div class="form form-inline">
-                        <div class="btn btn-success add">
-                            Add
-                        </div>
-                        <div class="btn btn-danger reset">
-                            Clear
+                <h2>Measurements
+                    <div class="form form-inline pull-right" style="margin-right: 40px;">
+                        <div class="btn btn-sm btn-default exportData" disabled>
+                            Export
                         </div>
                     </div>
-                </div>
+                </h2>
+                <hr style="margin-right: 10px; margin-left: 10px;">
 
-                <div class="col-md-6">
-                    {{#if connected}}
-                        <h3>Connected</h3>
-                    {{else}}
-                        <h3>Disconnected</h3>
-                    {{/if}}
-                    <div class="form form-inline">
-                        <div class="btn btn-primary reconnect">
-                            Reconnect
-                        </div>
-                        <div class="btn btn-warning disconnect">
-                            Disconnect
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
                 <div class="col-xs-12">
-                    <h3>Measurements</h3>
                     {{#if cloudAvg}}
-                        Cloud update avg: <span style="color:{{getCloudColor}}">{{cloudAvg}}</span><br>
+                        Cloud update avg: <span style="color:{{getCloudColor}}">{{cloudAvg}}</span> ms<br>
                     {{/if}}
                     {{#if fogAvg}}
-                        Fog update avg: <span style="color:{{getFogColor}}">{{fogAvg}}</span><br>
+                        Fog update avg: <span style="color:{{getFogColor}}">{{fogAvg}}</span> ms<br>
                     {{/if}}
                 </div>
             </div>

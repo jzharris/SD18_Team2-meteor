@@ -8,6 +8,14 @@ TagSchema = new SimpleSchema({
         type: String,
         label: "Node ID that the tag sent the event to"
     },
+    sent: {
+        type: Date,
+        label: "Time sent from fog server"
+    },
+    received: {
+        type: Date,
+        label: "Time received by cloud server"
+    },
     measurements: {
         type: Array,
         label: "Measurements"

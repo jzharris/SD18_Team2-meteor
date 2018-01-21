@@ -17,16 +17,28 @@ Template.list.onCreated(function() {
         console.log("inserting");
         Nodes.insert(node());
 
+        // if(Random.fraction() < 0.1) {
+        //     console.log('tag event!');
+        //     Tags.insert(tag());
+        // }
+
     }, 60000);
 });
 
 
 Template.list.events({
-    'click div.delete': function() {
-        Nodes.remove(this._id);
-    },
-    'click div.add': function() {
+    'click div.addNode': function() {
         Nodes.insert(node());
+    },
+    'click div.resetNode': function() {
+        Meteor.call('resetNodes');
+    },
+
+    'click div.addTag': function() {
+        Tags.insert(tag());
+    },
+    'click div.resetTag': function() {
+        Meteor.call('resetTags');
     },
 
     'click div.disconnect': function() {
@@ -35,24 +47,37 @@ Template.list.events({
     'click div.reconnect': function() {
         Meteor.call('reconnect');
     },
-    'click div.reset': function() {
-        Meteor.call('reset');
-    },
 });
 
 Template.list.helpers({
-    inLog() {
+
+    nodeInLog() {
         return Nodes.findOne({sent: {$exists : true}});
     },
-    items() {
+    nodesInLog() {
         return Nodes.find({sent: {$exists : true}}, {sort: {sent: 1}});
     },
-    inQueue() {
+    nodeInQueue() {
         return Nodes.findOne({sent: {$exists : false}});
     },
-    waiting() {
+    nodesInQueue() {
         return Nodes.find({sent: {$exists : false}});
     },
+
+    tagInLog() {
+        return Tags.findOne({sent: {$exists : true}});
+    },
+    tagsInLog() {
+        return Tags.find({sent: {$exists : true}}, {sort: {sent: 1}});
+    },
+    tagInQueue() {
+        return Tags.findOne({sent: {$exists : false}});
+    },
+    tagsInQueue() {
+        return Tags.find({sent: {$exists : false}});
+    },
+
+
     getOrigin() {
         return this.origin ? (this.origin === 'cloud' ? cloudColor : fogColor) : blackColor;
     },
@@ -81,6 +106,16 @@ Template.list.helpers({
                 i++;
             }
         }
+
+        cloud = Tags.find({origin: 'cloud'}).fetch();
+        for(let t in cloud) {
+            if(cloud[t].received && cloud[t].sent) {
+                let dt = cloud[t].received - cloud[t].sent;
+                sum += dt;
+                i++;
+            }
+        }
+
         return i > 0 ? sum / i : 0;
     },
     fogAvg() {
@@ -92,6 +127,15 @@ Template.list.helpers({
                 i++;
             }
         }
+
+        fog = Tags.find({origin : 'fog'}).fetch();
+        for(let t in fog) {
+            if(fog[t].received && fog[t].sent) {
+                sum += fog[t].received - fog[t].sent;
+                i++;
+            }
+        }
+
         return i > 0 ? sum / i : 0;
     },
 
