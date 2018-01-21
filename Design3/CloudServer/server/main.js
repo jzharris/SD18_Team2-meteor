@@ -6,7 +6,6 @@ Meteor.startup(() => {
     // code to run on server at startup
     console.log(Items.find().count());
     Meteor.publish("items", function(date) {
-        console.log("publish", date, Items.find().count());
         // if a date is given it is interpreted as a "minimum" date, only
         // newer items shown
         if (date) {
@@ -15,15 +14,10 @@ Meteor.startup(() => {
             return Items.find();
         }
     });
-
-    Meteor.publish('timing', function() {
-        return Timing.find();
-    });
 });
 
 Meteor.methods({
     'reset': function() {
-        Timing.remove({});
         Items.remove({});
     }
 });

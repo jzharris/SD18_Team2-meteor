@@ -3,37 +3,108 @@
 </head>
 
 <body>
-<h1>Fog Server</h1>
 
-{{> list}}
+<div class="container">
+    <div class="col-xs-12">
+        <div class="row">
+            <h1>Fog Server</h1>
+        </div>
+
+        {{> list}}
+    </div>
+</div>
+
 </body>
 
 <template name="list">
-    <ol>
-        {{#each items}}
-            <li>
-                sent: {{getSent}} | received: {{getReceived}} | dt: <span style="color:{{getOrigin}}">{{dt}}</span>
-            </li>
-        {{/each}}
-        <br>
-        <a href="#" class="add">Add</a> | <a href="#" class="reset">Clear</a>
-    </ol>
 
-    <br>
-    {{#if cloudAvg}}
-        cloud update avg: <span style="color:{{getCloudColor}}">{{cloudAvg}}</span><br>
-    {{/if}}
-    {{#if fogAvg}}
-        fog update avg: <span style="color:{{getFogColor}}">{{fogAvg}}</span><br>
-    {{/if}}
-    <br>
+    <div class="row">
 
-    {{#if connected}}
-        Connected
-    {{else}}
-        Disconnected
-    {{/if}}<br/>
-    <a href="#" class="disconnect">Disconnect</a>
-    |
-    <a href="#" class="reconnect">Reconnect</a>
+        <div class="col-md-6">
+
+            <div class="row">
+                <h3>Queue</h3>
+                {{#if inQueue}}
+                    <ol>
+                        {{#each waiting}}
+                            <li>
+                                <span style="color:{{getOrigin}}">id: {{_id}}</span>
+                            </li>
+                        {{/each}}
+                    </ol>
+                {{else}}
+                    <ul>
+                        <li>empty</li>
+                    </ul>
+                {{/if}}
+            </div>
+
+            <div class="row">
+                <h3>Log</h3>
+                {{#if inLog}}
+                    <ol>
+                        {{#each items}}
+                            <li>
+                                sent: {{sent}} | received: {{received}} | dt: <span style="color:{{getOrigin}}">{{dt}}</span>
+                            </li>
+                        {{/each}}
+                    </ol>
+                {{else}}
+                    <ul>
+                        <li>empty</li>
+                    </ul>
+                {{/if}}
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>Collection</h3>
+                    <div class="form form-inline">
+                        <div class="btn btn-success add">
+                            Add
+                        </div>
+                        <div class="btn btn-danger reset">
+                            Clear
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    {{#if connected}}
+                        <h3>Connected</h3>
+                    {{else}}
+                        <h3>Disconnected</h3>
+                    {{/if}}
+                    <div class="form form-inline">
+                        <div class="btn btn-primary reconnect">
+                            Reconnect
+                        </div>
+                        <div class="btn btn-warning disconnect">
+                            Disconnect
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <h3>Measurements</h3>
+                    {{#if cloudAvg}}
+                        Cloud update avg: <span style="color:{{getCloudColor}}">{{cloudAvg}}</span><br>
+                    {{/if}}
+                    {{#if fogAvg}}
+                        Fog update avg: <span style="color:{{getFogColor}}">{{fogAvg}}</span><br>
+                    {{/if}}
+                </div>
+            </div>
+
+            <br>
+
+        </div>
+
+    </div>
+
 </template>

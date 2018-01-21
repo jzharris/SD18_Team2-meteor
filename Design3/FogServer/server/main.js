@@ -5,16 +5,13 @@ import ServerSyncClient from 'meteor/chfritz:serversync';
 // *with* serversync package
 
 a = null;
+let sentLog = {};
 
 Meteor.startup(() => {
     // code to run on server at startup
 
-    Meteor.publish('myitems', function() {
+    Meteor.publish('items', function() {
         return Items.find();
-    });
-
-    Meteor.publish('timing', function() {
-        return Timing.find();
     });
 
     Status.remove({});
@@ -27,21 +24,6 @@ Meteor.startup(() => {
     });
 
     a = new ServerSyncClient(Meteor.settings.host, {
-        onConnect: function() {
-            console.log("connected to master");
-        },
-        onReconnect: function() {
-            console.log("reconnected to master");
-        },
-        beforeSyncDirty: function(count) {
-            console.log("beforeSyncDirty", count);
-        },
-        afterSyncDirty: function(count) {
-            console.log("afterSyncDirty", count);
-        }
-    });
-
-    b = new ServerSyncClient(Meteor.settings.host, {
         onConnect: function() {
             console.log("connected to master");
         },
@@ -71,54 +53,41 @@ Meteor.startup(() => {
         },
         beforeSyncUp: function(type, id, doc) {
             console.log("beforeSyncUp", type, id, doc);
-            if(!Timing.findOne({sync : id}) && type !== 'remove') {
-                Timing.insert({sync: id, sent: Date.now(), received: null, origin: 'flog'});
+            if(doc && doc.hasOwnProperty('sent') && doc.hasOwnProperty('received')) {
+                //updating internal times, do nothing
+            } else {
+                //new item, log time
+                sentLog[id] = Date.now();
             }
         },
         beforeSyncDown: function(type, id, doc) {
             console.log("beforeSyncDown", type, id, doc);
-            if(!Timing.findOne({sync : id}) && type !== 'remove') {
-                Timing.insert({sync: id, sent: Date.now(), received: null, origin: 'cloud'});
+            if(doc && doc.hasOwnProperty('sent') && doc.hasOwnProperty('received')) {
+                //updating internal times, do nothing
+            } else {
+                //new item, log time
+                sentLog[id] = Date.now();
             }
         },
         afterSyncUp: function(type, id, doc) {
             console.log("afterSyncUp", type, id, doc);
-            const timing = Timing.findOne({sync : id});
-            if(timing && timing.end == null && type !== 'remove') {
-                Timing.update({sync : id}, {$set : {received : Date.now(), origin: 'fog'}});
+            if(sentLog[id]) {
+                const sentDate = sentLog[id];
+                delete sentLog[id];
+                Items.update({_id : id}, {$set : {sent: sentDate, received: Date.now(), origin: 'fog'}});
             }
         },
         afterSyncDown: function(type, id, doc) {
             console.log("afterSyncDown", type, id, doc);
-            const timing = Timing.findOne({sync : id});
-            if(timing && timing.end == null && type !== 'remove') {
-                Timing.update({sync : id}, {$set : {received : Date.now(), origin: 'cloud'}});
+            if(sentLog[id]) {
+                const sentDate = sentLog[id];
+                delete sentLog[id];
+                Items.update({_id : id}, {$set : {sent: sentDate, received: Date.now(), origin: 'cloud'}});
             }
         },
 
         // args: [Date.now()] // testing selective publications: only get
         // items newer than our start time
-    });
-
-    b.sync('timing', {
-        mode: "write",
-        collection: Timing,
-        onReady: function() {
-            const coll = a.getCollection('items');
-            console.log("ready", coll.find().count());
-        },
-        beforeSyncUp: function(type, id, doc) {
-            console.log("beforeSyncUp", type, id, doc);
-        },
-        beforeSyncDown: function(type, id, doc) {
-            console.log("beforeSyncDown", type, id, doc);
-        },
-        afterSyncUp: function(type, id, doc) {
-            console.log("afterSyncUp", type, id, doc);
-        },
-        afterSyncDown: function(type, id, doc) {
-            console.log("afterSyncDown", type, id, doc);
-        },
     });
 });
 
@@ -139,7 +108,6 @@ Meteor.methods({
         });
     },
     'reset': function() {
-        Timing.remove({});
         Items.remove({});
     }
 });
