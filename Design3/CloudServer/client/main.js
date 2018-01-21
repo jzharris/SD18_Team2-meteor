@@ -17,14 +17,14 @@ Template.list.events({
         Nodes.insert(node());
     },
     'click div.resetNode': function() {
-        Meteor.call('resetNodes');
+        // Meteor.call('resetNodes');
     },
 
     'click div.addTag': function() {
-        Tags.insert(tag());
+        Tags.insert(tag('cloud', 'cloud'));
     },
     'click div.resetTag': function() {
-        Meteor.call('resetTags');
+        // Meteor.call('resetTags');
     },
 
     'click div.disconnect': function() {
@@ -50,17 +50,54 @@ Template.list.helpers({
         return Nodes.find({sent: {$exists : false}});
     },
 
-    tagInLog() {
-        return Tags.findOne({sent: {$exists : true}});
-    },
-    tagsInLog() {
-        return Tags.find({sent: {$exists : true}}, {sort: {sent: 1}});
-    },
     tagInQueue() {
         return Tags.findOne({sent: {$exists : false}});
     },
     tagsInQueue() {
         return Tags.find({sent: {$exists : false}});
+    },
+    tagInLog() {
+        return Tags.findOne({sent: {$exists : true}});
+    },
+    tagsInLog() {
+        const tags = Tags.find({sent: {$exists : true}}, {sort: {sent: 1}}).fetch();
+        sorted = [];
+
+        for(let t in tags) {
+            let index = sorted.map(function(x) {return x[0].tagID;}).indexOf(tags[t].tagID);
+            if(index === -1) {
+                sorted.push([tags[t]]);
+            } else {
+                sorted[index].push(tags[t]);
+            }
+        }
+
+        return sorted;
+    },
+    getNodeID() {
+        return this[0].nodeID;
+    },
+    getTagID() {
+        return this[0].tagID;
+    },
+    getGroupSize() {
+        return this.length;
+    },
+    getTagDt() {
+        const tags = this;
+
+        let sum = 0, i = 0;
+        for(let t in tags) {
+            if(tags[t].received && tags[t].sent) {
+                sum += tags[t].received - tags[t].sent;
+                i++;
+            }
+        }
+
+        return i > 0 ? sum / i : 0;
+    },
+    getTagOrigin() {
+        return this[0].origin ? (this[0].origin === 'cloud' ? cloudColor : fogColor) : blackColor;
     },
 
 

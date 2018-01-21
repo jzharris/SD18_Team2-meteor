@@ -18,7 +18,7 @@ node = function() {
     };
 };
 
-tag = function() {
+tag = function(nodeID, tagID) {
 
     let arr = [];
     for (let i = 1; i <= 10; i++) {
@@ -39,8 +39,8 @@ tag = function() {
     }
 
     return {
-        tagID: Random.id(),
-        nodeID: Random.id(),
+        tagID: tagID,
+        nodeID: nodeID,
         measurements: measure
     };
 };

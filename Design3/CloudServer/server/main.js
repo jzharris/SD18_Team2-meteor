@@ -15,7 +15,10 @@ Meteor.startup(() => {
 });
 
 Meteor.methods({
-    'reset': function() {
+    'resetNodes': function() {
         Nodes.remove({});
-    }
+    },
+    'resetTags': function() {
+        Tags.remove({});
+    },
 });

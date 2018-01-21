@@ -1,4 +1,5 @@
 import { Template } from 'meteor/templating';
+import { Random } from 'meteor/random';
 
 import './main.html';
 
@@ -17,10 +18,21 @@ Template.list.onCreated(function() {
         console.log("inserting");
         Nodes.insert(node());
 
-        // if(Random.fraction() < 0.1) {
-        //     console.log('tag event!');
-        //     Tags.insert(tag());
-        // }
+        if(Random.fraction() < 0.25) {
+
+            const nodeID = Random.id();
+            const tagID = Random.id();
+
+            let arr = [];
+            for (let i = 1; i <= 10; i++) {
+                arr.push(i);
+            }
+
+            //random number of tag events between 1 and 10
+            for (let i = 0; i < Random.choice(arr); i++) {
+                Tags.insert(tag(nodeID, tagID));
+            }
+        }
 
     }, 60000);
 });
@@ -35,7 +47,7 @@ Template.list.events({
     },
 
     'click div.addTag': function() {
-        Tags.insert(tag());
+        Tags.insert(tag('fog', 'fog'));
     },
     'click div.resetTag': function() {
         Meteor.call('resetTags');
@@ -64,17 +76,54 @@ Template.list.helpers({
         return Nodes.find({sent: {$exists : false}});
     },
 
-    tagInLog() {
-        return Tags.findOne({sent: {$exists : true}});
-    },
-    tagsInLog() {
-        return Tags.find({sent: {$exists : true}}, {sort: {sent: 1}});
-    },
     tagInQueue() {
         return Tags.findOne({sent: {$exists : false}});
     },
     tagsInQueue() {
         return Tags.find({sent: {$exists : false}});
+    },
+    tagInLog() {
+        return Tags.findOne({sent: {$exists : true}});
+    },
+    tagsInLog() {
+        const tags = Tags.find({sent: {$exists : true}}, {sort: {sent: 1}}).fetch();
+        sorted = [];
+
+        for(let t in tags) {
+            let index = sorted.map(function(x) {return x[0].tagID;}).indexOf(tags[t].tagID);
+            if(index === -1) {
+                sorted.push([tags[t]]);
+            } else {
+                sorted[index].push(tags[t]);
+            }
+        }
+
+        return sorted;
+    },
+    getNodeID() {
+        return this[0].nodeID;
+    },
+    getTagID() {
+        return this[0].tagID;
+    },
+    getGroupSize() {
+        return this.length;
+    },
+    getTagDt() {
+        const tags = this;
+
+        let sum = 0, i = 0;
+        for(let t in tags) {
+            if(tags[t].received && tags[t].sent) {
+                sum += tags[t].received - tags[t].sent;
+                i++;
+            }
+        }
+
+        return i > 0 ? sum / i : 0;
+    },
+    getTagOrigin() {
+        return this[0].origin ? (this[0].origin === 'cloud' ? cloudColor : fogColor) : blackColor;
     },
 
 

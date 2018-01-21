@@ -114,7 +114,10 @@
                     <ol>
                         {{#each tagsInLog}}
                             <li>
-                                sent: {{sent}} | received: {{received}} <br> delay: <span style="color:{{getOrigin}}">{{dt}}</span> ms
+                                nodeID: {{getNodeID}}<br>
+                                tagID: {{getTagID}}<br>
+                                groupSize: {{getGroupSize}}<br>
+                                delay: <span style="color:{{getTagOrigin}}">{{getTagDt}}</span> ms
                             </li>
                         {{/each}}
                     </ol>
