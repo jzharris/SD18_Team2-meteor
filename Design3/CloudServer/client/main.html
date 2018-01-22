@@ -124,8 +124,11 @@
             <div class="row">
                 <h2>Measurements
                     <div class="form form-inline pull-right" style="margin-right: 40px;">
-                        <div class="btn btn-sm btn-default exportData">
-                            Export
+                        <div class="btn btn-sm btn-default downloadCloud" {{cloudPresent}}>
+                            <i class="fa fa-download" aria-hidden="true"></i> Cloud
+                        </div>
+                        <div class="btn btn-sm btn-default downloadFog" {{fogPresent}}>
+                            <i class="fa fa-download" aria-hidden="true"></i> Fog
                         </div>
                     </div>
                 </h2>

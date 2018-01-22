@@ -1,4 +1,4 @@
-// Define the schema
+// TODO: bind to collection
 NodeSchema = new SimpleSchema({
     nodeID: {
         type: String,

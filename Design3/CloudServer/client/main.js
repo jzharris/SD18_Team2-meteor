@@ -33,6 +33,29 @@ Template.list.events({
     'click div.reconnect': function() {
         Meteor.call('reconnect');
     },
+
+    'click div.downloadCloud': function() {
+        if(dataPresent('cloud')) {
+            let nameFile = 'cloudData.csv';
+            Meteor.call('downloadCSV', 'cloud', function(err, fileContent) {
+                if(fileContent){
+                    let blob = new Blob([fileContent], {type: "text/plain;charset=utf-8"});
+                    saveAs(blob, nameFile);
+                }
+            });
+        }
+    },
+    'click div.downloadFog': function() {
+        if(dataPresent('fog')) {
+            let nameFile = 'fogData.csv';
+            Meteor.call('downloadCSV', 'fog', function(err, fileContent) {
+                if(fileContent){
+                    let blob = new Blob([fileContent], {type: "text/plain;charset=utf-8"});
+                    saveAs(blob, nameFile);
+                }
+            });
+        }
+    },
 });
 
 Template.list.helpers({
@@ -119,6 +142,12 @@ Template.list.helpers({
         return fogColor;
     },
 
+    cloudPresent() {
+        return dataPresent('cloud') ? '' : 'disabled';
+    },
+    fogPresent() {
+        return dataPresent('fog') ? '' : 'disabled';
+    },
     cloudAvg() {
         let sum = 0, i = 0;
         let cloud = Nodes.find({origin: 'cloud'}).fetch();

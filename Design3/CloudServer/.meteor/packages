@@ -20,4 +20,5 @@ shell-server@0.3.0            # Server-side component of the `meteor shell` comm
 insecure@1.0.7                # Allow all DB writes from clients (for prototyping)
 aldeed:simple-schema
 twbs:bootstrap
-#meteorhacks:npm
+fortawesome:fontawesome
+lfergon:exportcsv

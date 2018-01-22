@@ -44,3 +44,34 @@ tag = function(nodeID, tagID) {
         measurements: measure
     };
 };
+
+collectAssets = function(origin) {
+
+    const nodes = Nodes.find({sent: {$exists : true}, origin: origin}, {sort: {sent: 1}}).map(function(x) {
+        return {
+            sent: x.sent,
+            received: x.received,
+            origin: x.origin,
+            node: 1
+        };
+    });
+
+    const tags = Tags.find({sent: {$exists : true}, origin: origin}, {sort: {sent: 1}}).map(function(x) {
+        return {
+            sent: x.sent,
+            received: x.received,
+            origin: x.origin,
+            node: 0
+        };
+    });
+
+    return nodes.concat(tags);
+
+};
+
+dataPresent = function(origin) {
+
+    return Nodes.findOne({sent: {$exists : true}, origin: origin}) ||
+    Tags.findOne({sent: {$exists : true}, origin: origin})
+
+};
