@@ -17,14 +17,14 @@ Template.list.events({
         Nodes.insert(node());
     },
     'click div.resetNode': function() {
-        // Meteor.call('resetNodes');
+        Meteor.call('resetNodes');
     },
 
     'click div.addTag': function() {
         Tags.insert(tag('cloud', 'cloud'));
     },
     'click div.resetTag': function() {
-        // Meteor.call('resetTags');
+        Meteor.call('resetTags');
     },
 
     'click div.disconnect': function() {
