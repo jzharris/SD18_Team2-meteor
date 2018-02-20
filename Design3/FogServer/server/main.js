@@ -27,7 +27,7 @@ Meteor.startup(() => {
         return Tags.find();
     });
 
-    link = new ServerSyncClient(Meteor.settings.host, {
+    link = new ServerSyncClient(Meteor.settings.host ? Meteor.settings.host : "http://localhost:3000", {
         onConnect: function() {
             console.log("connected to master");
         },
