@@ -1,0 +1,37 @@
+<head>
+    <title>MARS Watcher</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+</head>
+
+<body>
+
+</body>
+
+<template name="mainLayout">
+{{#AdminLTE skin="red" fixed=true}}
+    {{> mainHeader}}
+    {{#if notMobile}}
+        {{> mainSidebar}}
+    {{/if}}
+
+    <div class="content-wrapper" style="min-height: {{minHeight}}; position:relative;">
+        <!--{{#transitioner}}-->
+            {{> yield}}
+        <!--{{/transitioner}}-->
+    </div>
+
+    <!--{{> mainFooter}}-->
+    <!--{{> mainOffsidebar}}-->
+{{/AdminLTE}}
+</template>
+
+<template name="loginLayout">
+{{#AdminLTE skin="blue"}}
+    {{> yield}}
+{{/AdminLTE}}
+</template>
