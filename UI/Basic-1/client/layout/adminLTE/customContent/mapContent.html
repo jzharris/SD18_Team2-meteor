@@ -1,33 +1,50 @@
 <template name="mapContent">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-        <h1>
-            Map
-            <small>Search for a location</small>
-        </h1>
-    </section>
 
     <!-- Main content -->
-    <section class="content" style="padding-top: 0; min-height: {{sectionHeight}};">
+    <section class="content" style="padding-top: 0;  min-height: {{sectionHeight}};">
 
         <!-- Your Page Content Here -->
 
         <div class="row">
-            <!-- search form -->
-            <form class="sidebar-form">
-                <div class="input-group">
-                    <input type="text" name="q" class="form-control" placeholder="Find a location">
-                    <span class="input-group-btn">
+            <!--<div class="row">-->
+            <div class="col-xs-12" style="padding-left: 0; width:{{sectionWidth}};">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>
+                        Map
+                        <small>Search for a location</small>
+                    </h1>
+                </section>
+
+                <section class="content">
+
+                    <!-- Your Page Content Here -->
+
+                    <div class="row">
+                        <!-- search form -->
+                        <form class="sidebar-form">
+                            <div class="input-group">
+                                <input type="text" name="q" class="form-control" placeholder="Find a location">
+                                <span class="input-group-btn">
                         <button name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
                         </button>
                     </span>
-                </div>
-            </form>
-        </div>
+                            </div>
+                        </form>
+                    </div>
 
-        <div class="row">
-            <div class="map-container">
-                {{> googleMap name="exampleMap" options=exampleMapOptions}}
+                    <div class="row">
+                        <div class="map-container">
+                            {{> googleMap name="exampleMap" options=exampleMapOptions}}
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+            <!--</div>-->
+
+            <div style="position: fixed; margin-left: {{sectionWidth}}; background-color: #222d32; height: 100%; width: 230px;">
+
             </div>
         </div>
 
