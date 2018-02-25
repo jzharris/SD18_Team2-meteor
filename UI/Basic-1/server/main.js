@@ -1,5 +1,7 @@
-import { Meteor } from 'meteor/meteor';
+import {Meteor} from 'meteor/meteor';
 
-Meteor.startup(() => {
-  // code to run on server at startup
+Meteor.startup(function() {
+    // code to run on server at startup
+
+    // process.env.ROOT_URL = 'http://nmt-basic2.herokuapp.com:3000';
 });

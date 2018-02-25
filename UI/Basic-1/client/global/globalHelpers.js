@@ -18,6 +18,10 @@ Template.registerHelper('tabPanelHeight', function () {
     return (minHeight.get() - $('.content-header').height() - 140) + 'px';
 });
 
+Template.registerHelper('tabContentHeight', function () {
+    return (minHeight.get() - $('.content-header').height() - 295) + 'px';
+});
+
 Template.registerHelper('notMobile', function() {
     return !mobile;
 });

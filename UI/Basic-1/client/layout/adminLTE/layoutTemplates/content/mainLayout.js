@@ -6,7 +6,7 @@ Template.mainLayout.onCreated(function () {
     Blaze._allowJavascriptUrls();
 
     // For reactive rendering of window -- slows down the app!
-    // $(window).resize(function () {
-    //     minHeight.set($(window).height() - $('.main-footer').outerHeight());
-    // });
+    $(window).resize(function () {
+        minHeight.set($(window).height() - $('.main-footer').outerHeight());
+    });
 });
