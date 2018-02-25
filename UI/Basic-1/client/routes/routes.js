@@ -36,7 +36,3 @@ Router.route('/notifications', {
 AppController = RouteController.extend({
     layoutTemplate: 'mainLayout'
 });
-
-LoginController = RouteController.extend({
-    layoutTemplate: 'loginLayout'
-});

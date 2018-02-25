@@ -1,22 +1,45 @@
 <template name="notificationsContent">
-    <!-- Content Wrapper. Contains page content -->
-    <!--<div id="content" class="content-wrapper" style="min-height: {{minHeight}};">-->
-        <!-- Content Header (Page header) -->
-        <section class="content-header">
-            <h1>
-                Notifications
-                <small>Stay updated with the latest field data</small>
-            </h1>
-        </section>
 
-        <!-- Main content -->
-        <section class="content" style="min-height: {{minSection}};">
+    <!-- Main content -->
+    <section class="content" style="padding-top: 0;  min-height: {{sectionHeight}};">
 
-            <!-- Your Page Content Here -->
+        <!-- Your Page Content Here -->
+
+        <div class="row">
+            <!--<div class="row">-->
+                <div class="col-xs-12" style="padding-left: 0; width:{{sectionWidth}};">
+                    <!-- Content Header (Page header) -->
+                    <section class="content-header">
+                        <h1>
+                            Notifications
+                            <small>Stay updated with the latest field data</small>
+                        </h1>
+                    </section>
+
+                    <section class="content">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#">Active</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link disabled" href="#">Disabled</a>
+                            </li>
+                        </ul>
+                    </section>
+                </div>
+            <!--</div>-->
 
 
+            <div style="position: fixed; margin-left: {{sectionWidth}}; background-color: #222d32; height: 100%; width: 230px;">
 
-        </section>
-    <!--</div>-->
-    <!-- /.content-wrapper -->
+            </div>
+        </div>
+
+    </section>
 </template>
