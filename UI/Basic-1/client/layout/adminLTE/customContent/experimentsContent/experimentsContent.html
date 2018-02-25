@@ -16,7 +16,7 @@
                     </h1>
                 </section>
 
-                <section class="content" style="padding-bottom: 0;">
+                <section class="content" style="padding-bottom: 0; padding-left: 22px;">
 
                     <ul class="nav nav-tabs">
                         <li class="active" style="width: 25%"><a data-toggle="tab" href="#home">Summary</a></li>
@@ -28,26 +28,22 @@
                     <div class="tab-content" style="background: white; width:{{tabPanelWidth}}; height:{{tabPanelHeight}}; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd;">
                         <div id="home" class="tab-pane fade in active">
                             <section class="content">
-                                <h3>Summary</h3>
-                                <p>Some content.</p>
+                                {{> summaryContent}}
                             </section>
                         </div>
                         <div id="menu1" class="tab-pane fade">
                             <section class="content">
-                                <h3>Map</h3>
-                                <p>Some content.</p>
+                                {{> mapContent}}
                             </section>
                         </div>
                         <div id="menu2" class="tab-pane fade">
                             <section class="content">
-                                <h3>Charts</h3>
-                                <p>Some content.</p>
+                                {{> chartsContent}}
                             </section>
                         </div>
                         <div id="menu3" class="tab-pane fade">
                             <section class="content">
-                                <h3>Events Log</h3>
-                                <p>Some content.</p>
+                                {{> eventLogContent}}
                             </section>
                         </div>
                     </div>
@@ -55,9 +51,7 @@
             </div>
             <!--</div>-->
 
-            <div style="position: fixed; margin-left: {{sectionWidth}}; background-color: #222d32; height: 100%; width: 230px;">
-
-            </div>
+            {{> customOffsidebar}}
         </div>
 
     </section>
