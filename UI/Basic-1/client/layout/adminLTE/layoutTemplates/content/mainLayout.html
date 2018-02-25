@@ -21,19 +21,13 @@
         {{> mainSidebar}}
     {{/if}}
 
+    <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper" style="min-height: {{minHeight}}; position:relative;">
-        <!--{{#transitioner}}-->
-            {{> yield}}
-        <!--{{/transitioner}}-->
+        {{> yield}}
     </div>
+    <!-- /.content-wrapper -->
 
-    <!--{{> mainFooter}}-->
+    {{> mainFooter}}
     <!--{{> mainOffsidebar}}-->
-{{/AdminLTE}}
-</template>
-
-<template name="loginLayout">
-{{#AdminLTE skin="blue"}}
-    {{> yield}}
 {{/AdminLTE}}
 </template>

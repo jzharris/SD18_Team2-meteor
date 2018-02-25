@@ -5,6 +5,8 @@
     "start": "meteor run"
   },
   "dependencies": {
+    "angular-io-slimscroll": "^2.3.3",
+    "angular-slimscroll-npm": "^1.0.2",
     "datatables": "^1.10.12",
     "jquery": "^2.2.4",
     "meteor-node-stubs": "~0.2.0",
