@@ -21,3 +21,7 @@ Template.registerHelper('tabPanelHeight', function () {
 Template.registerHelper('notMobile', function() {
     return !mobile;
 });
+
+Template.registerHelper('tabSelected', function(targetRoute) {
+    return Router.current().route._path === targetRoute ? "active" : "";
+});
