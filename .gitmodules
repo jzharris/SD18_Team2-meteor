@@ -1,0 +1,3 @@
+[submodule "UI/basic-2"]
+	path = UI/basic-2
+	url = git@heroku.com:basic-2.git
