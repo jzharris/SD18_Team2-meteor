@@ -1,0 +1,65 @@
+<template name="experimentContent">
+
+    <!-- Main content -->
+    <section class="content" style="padding-top: 0;  min-height: {{sectionHeight}};">
+
+        <!-- Your Page Content Here -->
+
+        <div class="row">
+            <!--<div class="row">-->
+            <div class="col-xs-12" style="padding-left: 0; width:{{sectionWidth}};">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>
+                        Experiment 1
+                        <small>Short description of this simulation</small>
+                    </h1>
+                </section>
+
+                <section class="content" style="padding-bottom: 0;">
+
+                    <ul class="nav nav-tabs">
+                        <li class="active" style="width: 25%"><a data-toggle="tab" href="#home">Summary</a></li>
+                        <li style="width: 25%"><a data-toggle="tab" href="#menu1">Map</a></li>
+                        <li style="width: 25%"><a data-toggle="tab" href="#menu2">Charts</a></li>
+                        <li style="width: 25%"><a data-toggle="tab" href="#menu3">Event Log</a></li>
+                    </ul>
+
+                    <div class="tab-content" style="background: white; width:{{tabPanelWidth}}; height:{{tabPanelHeight}}; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd;">
+                        <div id="home" class="tab-pane fade in active">
+                            <section class="content">
+                                <h3>Summary</h3>
+                                <p>Some content.</p>
+                            </section>
+                        </div>
+                        <div id="menu1" class="tab-pane fade">
+                            <section class="content">
+                                <h3>Map</h3>
+                                <p>Some content.</p>
+                            </section>
+                        </div>
+                        <div id="menu2" class="tab-pane fade">
+                            <section class="content">
+                                <h3>Charts</h3>
+                                <p>Some content.</p>
+                            </section>
+                        </div>
+                        <div id="menu3" class="tab-pane fade">
+                            <section class="content">
+                                <h3>Events Log</h3>
+                                <p>Some content.</p>
+                            </section>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!--</div>-->
+
+            <div style="position: fixed; margin-left: {{sectionWidth}}; background-color: #222d32; height: 100%; width: 230px;">
+
+            </div>
+        </div>
+
+    </section>
+
+</template>

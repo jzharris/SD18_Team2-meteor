@@ -11,8 +11,15 @@ Router.configure({
 Router.route('/', {
     controller: 'AppController',
     onBeforeAction: function () {
-        this.redirect("/map");
+        this.redirect("/experiments");
         this.next();
+    }
+});
+
+Router.route('/experiments', {
+    controller: "AppController",
+    action: function () {
+        this.render('experimentContent');
     }
 });
 
