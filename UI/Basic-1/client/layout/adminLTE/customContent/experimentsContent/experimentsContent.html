@@ -19,16 +19,32 @@
                 <section class="content" style="padding-bottom: 0;">
 
                     <ul class="nav nav-tabs">
-                        <li class="active" style="width: 25%"><a data-toggle="tab" href="#home">Summary</a></li>
-                        <li style="width: 25%"><a data-toggle="tab" href="#menu1">Map</a></li>
-                        <li style="width: 25%"><a data-toggle="tab" href="#menu2">Charts</a></li>
-                        <li style="width: 25%"><a data-toggle="tab" href="#menu3">Event Log</a></li>
+                        <li class="active" style="width: 25%">
+                            <a data-toggle="tab" href="#home">
+                                <i class="fa fa-dashboard"></i>&nbsp;&nbsp;Dashboard
+                            </a>
+                        </li>
+                        <li style="width: 25%">
+                            <a data-toggle="tab" href="#menu1">
+                                <i class="fa fa-map"></i>&nbsp;&nbsp;Map
+                            </a>
+                        </li>
+                        <li style="width: 25%">
+                            <a data-toggle="tab" href="#menu2">
+                                <i class="fa fa-pie-chart"></i>&nbsp;&nbsp;Charts
+                            </a>
+                        </li>
+                        <li style="width: 25%">
+                            <a data-toggle="tab" href="#menu3">
+                                <i class="fa fa-laptop"></i>&nbsp;&nbsp;Event Log
+                            </a>
+                        </li>
                     </ul>
 
                     <div class="tab-content" style="background: white; width:{{tabPanelWidth}}; height:{{tabPanelHeight}}; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd;">
                         <div id="home" class="tab-pane fade in active">
                             <section class="content">
-                                {{> summaryContent}}
+                                {{> dashboardContent}}
                             </section>
                         </div>
                         <div id="menu1" class="tab-pane fade">
