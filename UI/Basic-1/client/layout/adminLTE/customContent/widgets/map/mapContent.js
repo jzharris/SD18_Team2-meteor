@@ -1,6 +1,6 @@
 Template.mapContent.onCreated(function() {
     // We can use the `ready` callback to interact with the map API once the map is ready.
-    GoogleMaps.ready('Map', function(map) {
+    GoogleMaps.ready('map', function(map) {
         // Add a marker to the map once it's ready
 
         var marker_node = "dist/img/map/pin_node.png";
@@ -20,7 +20,7 @@ Template.mapContent.onCreated(function() {
               var lng = pnt.lng();
               lng = lng.toFixed(4);
               console.log("Latitude: " + lat + "  Longitude: " + lng);
-        }
+        }  
 
     });
 });
