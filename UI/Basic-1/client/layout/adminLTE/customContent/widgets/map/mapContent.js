@@ -7,7 +7,7 @@ Template.mapContent.onCreated(function() {
             node: {
                 name: 'Node',
                 icon: {
-                  path: 'M 10 20 L 30 20 L 30 10 L 10 10 z',
+                  path: "M0,10L20,10L20,0L0,0z",
                   fillColor: 'green',
                   fillOpacity: 0.8,
                   scale: 1,
@@ -17,7 +17,7 @@ Template.mapContent.onCreated(function() {
             tag: {
                 name: 'Tag',
                 icon: {
-                  path: 'M 10 30 L 20 10 L 30 30  z',
+                  path: "M0,20L10,0L20,20z",
                   fillColor: 'green',
                   fillOpacity: 0.8,
                   scale: 1,
@@ -26,30 +26,34 @@ Template.mapContent.onCreated(function() {
             }}
         };
 
-        /*  Trying to implement a legend
-        var legend = this.find('#legend')
-        for (var key in icons) {
-          var type = icons[key];
-          var name = type.name;
-          var icon = type.icon;
-          var div = this.createElement('div');
-          div.innerHTML = '<img src="' + icon + '"> ' + name;
-          legend.appendChild(div);
-        }
-        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
-        */
+        
 
-
-        // Test Points
+        // Test Markers
         var marker = addMarker(map.options.center,icons['node'].icon);
         var marker2 = addMarker(new google.maps.LatLng(34.0659, -106.9075),icons['tag'].icon);
         
 
         // Google Map's listener for mouse movement over the map
         google.maps.event.addListener(map.instance, 'mousemove', function (event) {
-                console.log(displayCoordinates(event.latLng));
+                //console.log(displayCoordinates(event.latLng));
         });  
 
+
+        //  Trying to implement a legend
+        
+        var legend = $(window).find('#legend')
+        console.log(legend);
+        for (var key in icons) {
+          var type = icons[key];
+          var name = type.name;
+          var icon = type.icon.path;
+          console.log(icon);
+          var color = type.icon.fillColor;
+          var label = '<div><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</div>';
+          $('#legend').append(label)
+        }
+        //map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($(window).find('#legend'));
+        
 
         function displayCoordinates(latLng) {
               // Function for writing google maps coords as string
