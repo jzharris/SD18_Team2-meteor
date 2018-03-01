@@ -2,58 +2,54 @@ Template.mapContent.onCreated(function() {
     // We can use the `ready` callback to interact with the map API once the map is ready.
     GoogleMaps.ready('map', function(map) {
         // Add a marker to the map once it's ready
-       
+
         var icons = {// Define Icons
-            node: {
-                name: 'Node',
+            tag: {
+                name: 'Tag',
                 icon: {
                   path: "M0,10L20,10L20,0L0,0z",
                   fillColor: 'green',
                   fillOpacity: 0.8,
                   scale: 1,
                   strokeWeight: 0,
-                  anchor: new google.maps.Point(11,11),
+                  anchor: new google.maps.Point(10,5)
                 }},
-            tag: {
-                name: 'Tag',
+            node: {
+                name: 'Node',
                 icon: {
                   path: "M0,20L10,0L20,20z",
                   fillColor: 'green',
                   fillOpacity: 0.8,
                   scale: 1,
                   strokeWeight: 0,
-                  anchor: new google.maps.Point(11,11)
+                  anchor: new google.maps.Point(10,5)
             }}
         };
 
-        
-
-        // Test Markers
-        var marker = addMarker(map.options.center,icons['node'].icon);
-        var marker2 = addMarker(new google.maps.LatLng(34.0659, -106.9075),icons['tag'].icon);
-        
+        var nodes = [];
+        var tags = [];
 
         // Google Map's listener for mouse movement over the map
-        google.maps.event.addListener(map.instance, 'mousemove', function (event) {
-                //console.log(displayCoordinates(event.latLng));
-        });  
+        google.maps.event.addListener(map.instance, 'click', function (event) {
+                addTag(event.latLng,Math.floor(Math.random() * 60));
+        });
 
+        google.maps.event.addListener(map.instance, 'rightclick', function (event) {
+                addNode(event.latLng);
+        });
 
         //  Trying to implement a legend
-        
         var legend = $(window).find('#legend')
         console.log(legend);
         for (var key in icons) {
           var type = icons[key];
           var name = type.name;
           var icon = type.icon.path;
-          console.log(icon);
           var color = type.icon.fillColor;
           var label = '<div><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</div>';
           $('#legend').append(label)
         }
-        //map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($(window).find('#legend'));
-        
+        //map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($(window).find('#legend'))
 
         function displayCoordinates(latLng) {
               // Function for writing google maps coords as string
@@ -62,24 +58,57 @@ Template.mapContent.onCreated(function() {
               var lng = latLng.lng();
               lng = lng.toFixed(4);
               return "Latitude: " + lat + "  Longitude: " + lng
-          }  
+          }
+
+        function addTag(latLng,r) {
+          var tag = {
+              marker: addMarker(latLng,icons['tag'].icon),
+              circle: new google.maps.Circle({
+                strokeWeight: 0,
+                clickable: false,
+                fillColor: '#0b8080',
+                fillOpacity: 0.2,
+                map: map.instance,
+                center: latLng,
+                radius: r
+            })
+          }
+
+          tags.push(tag);
+
+          tag.marker.addListener('rightclick', function() { // For Testing
+            removeMapObject(tag.marker);
+            removeMapObject(tag.circle);
+            tags.splice(tags.indexOf(tag))
+
+          });
+        }
+
+        function addNode(latLng,pin_icon) {
+          var node = addMarker(latLng,icons['node'].icon);
+          nodes.push(node);
+
+          node.addListener('rightclick', function() { // For Testing
+            removeMapObject(node);
+            nodes.splice(nodes.indexOf(node))
+          });
+        }
 
         function addMarker(latLng,pin_icon) {
             // Function for creating markers
-           return new google.maps.Marker({
+           var marker = new google.maps.Marker({
                 position: latLng,
                 map: map.instance,
                 icon: pin_icon,
-                title: displayCoordinates(latLng)
             });
+
+            return marker;
         }
 
-        function RemoveMarker(marker) {
-            // Function for
+        function removeMapObject(marker) {
+            // Function for removing markers from the map
             marker.setMap(null);
-            marker = null;
         }
-
     });
 });
 
