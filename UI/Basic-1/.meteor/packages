@@ -24,6 +24,7 @@ twbs:bootstrap
 mfactory:admin-lte
 #admin-lte-modified
 daviator:admin-lte
+d3js:d3
 
 iron:router
 dburles:google-maps

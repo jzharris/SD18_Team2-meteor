@@ -113,7 +113,7 @@ Template.mapContent.onCreated(function() {
 });
 
 Template.mapContent.helpers({
-    MapOptions() {
+    MapOptions: function() {
         // Make sure the maps API has loaded
         if (GoogleMaps.loaded()) {
             // Map initialization options

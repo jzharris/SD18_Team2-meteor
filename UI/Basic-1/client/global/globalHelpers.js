@@ -11,8 +11,11 @@ Template.registerHelper('sectionWidth', function () { //1346
 });
 
 Template.registerHelper('tabPanelWidth', function () {
-    return ($(window).width() - 460 - 47) + 'px';
+    return tabPanelWidth() + 'px';
 });
+tabPanelWidth = function () {
+    return ($(window).width() - 460 - 47);
+};
 
 Template.registerHelper('tabPanelHeight', function () {
     return (minHeight.get() - $('.content-header').height() - 140) + 'px';
