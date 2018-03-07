@@ -1,0 +1,32 @@
+.map-container {
+    padding-right: 10px;
+    padding-left: 10px;
+    width: 100%;
+}
+
+#legend {
+font-family: Arial, sans-serif;
+background: rgba(34, 45, 50, 1);
+color: #fff;
+padding: 10px;
+margin: 10px;
+border: 0px
+}
+
+#legend h3 {
+margin-top: 0;
+}
+
+#legend svg {
+vertical-align: middle;
+}
+
+.hoverBox {
+  font-family: Arial, sans-serif;
+  background: rgba(34, 45, 50, 0.6);
+  color: #fff;
+  padding: 5px;
+  margin: 5px;
+  border: 0px;
+  position: absolute;
+}

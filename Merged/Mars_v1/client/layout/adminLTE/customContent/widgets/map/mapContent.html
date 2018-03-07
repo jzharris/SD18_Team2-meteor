@@ -1,0 +1,49 @@
+<template name="mapContent">
+
+    <!-- Main content -->
+    <section class="content" style="padding-top: 0;">
+
+        <!-- Your Page Content Here -->
+
+        <div class="row">
+
+            <div class="col-xs-12" style="padding-left: 0; padding-right: 0; width:100%;">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>
+                        Map
+                        <small>Search for a location</small>
+                    </h1>
+                </section>
+
+                <section class="content">
+
+                    <!-- Your Page Content Here -->
+
+                    <div class="row">
+                        <!-- search form -->
+                        <form class="sidebar-form">
+                            <div class="input-group">
+                                <input type="text" name="q" class="form-control" placeholder="Find a location">
+                                <span class="input-group-btn">
+                                    <button name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i></button>
+                                </span>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="row">
+                        <div class="map-container" style="height: {{tabContentHeight}};">
+                            {{> googleMap name="map" options=MapOptions}}
+                            
+                        </div>
+                    </div>
+
+                    <div id="legend"><h3>Legend</h3></div>
+                </section>
+            </div>
+
+        </div>
+
+    </section>
+</template>
