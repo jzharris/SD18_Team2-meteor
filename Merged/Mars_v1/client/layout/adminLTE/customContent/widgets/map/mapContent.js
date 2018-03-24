@@ -1,8 +1,12 @@
+import { Random } from 'meteor/random';
+
 Template.mapContent.onCreated(function() {
-    // We can use the `ready` callback to interact with the map API once the map is ready.
+    var self = this;
+
     GoogleMaps.ready('map', function(map) {
 
-
+        // ================================================
+        // Define map icons
         var icons = {// Define Icons
             tag: {
                 name: 'Tag',
@@ -31,6 +35,7 @@ Template.mapContent.onCreated(function() {
         var pins_nodes = [];
         var pins_tags = [];
 
+        // ================================================
         // Draw map legend
         map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($('#legend')[0])
         for (var key in icons) {
@@ -41,17 +46,59 @@ Template.mapContent.onCreated(function() {
           var label = '<div><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</div>';
           $('#legend').append(label)
         }
+        // ================================================
+        /*
+        // Reactively update map
+        self.autorun(function() {
+          const nodes = Nodes.find().observe({
 
+            added: function(x) {
+              var latLng = new google.maps.LatLng({lat: x.gps.lat, lng: x.gps.lon});
+              addNode(latLng);
+            },
+
+            changed: function(x) {},
+
+            removed: function(x) {}
+
+          });
+
+          //const tags = tags.find().map(function(x) {
+          //});
+        });
+        */
+
+
+        //===================================================
         // Google Map's listeners for testing
-        google.maps.event.addListener(map.instance, 'click', function (event) {
-                addTag(event.latLng,Math.floor(Math.random() * 60));
+        google.maps.event.addListener(map.instance, 'click',
+          function (event) {
+            addTag(event.latLng,0);
+            //Tags.insert({})
         });
         google.maps.event.addListener(map.instance, 'rightclick', function (event) {
-                addNode(event.latLng);
+          addNode(event.latLng);
+          /*
+          // Add node to database
+                Nodes.insert({
+                    nodeID: Random.id(),
+                    nodeVersion: '1.0.0',
+                    nodeType: 'Tester',
+                    battery: {
+                        voltage: Random.fraction()*10,
+                        amperage: Random.fraction()*2,
+                        timestamp: new Date()
+                    },
+                    gps: {
+                        lat: event.latLng.lat(),
+                        lon: event.latLng.lng(),
+                        timestamp: new Date()
+                    }
+                });
+                */
         });
-
-
-        // Map functions============================
+        //====================================================
+        // Map functions
         function displayCoordinates(latLng) {
               // Function for writing google maps coords as string
               var lat = latLng.lat();
@@ -77,10 +124,9 @@ Template.mapContent.onCreated(function() {
             })
           }
 
-
           pins_tags.push(tag);
 
-          var hovertxt = displayCoordinates(tag.marker.position) + ' radius: ' + tag.circle.radius
+          var hovertxt = displayCoordinates(tag.marker.position)
           var txt = hoverBox(tag.marker,hovertxt)
 
           tag.marker.addListener('rightclick', function() { // For Testing
@@ -236,7 +282,7 @@ Template.mapContent.onCreated(function() {
             this.setMap(this.map_);
           }
         }
-
+        //====================================================
 
     });
 });
