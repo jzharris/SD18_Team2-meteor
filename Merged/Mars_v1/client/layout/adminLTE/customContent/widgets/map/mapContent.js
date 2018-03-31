@@ -2,83 +2,150 @@ import { Random } from 'meteor/random';
 
 Template.mapContent.onCreated(function() {
     var self = this;
-
+// ================================================
+// Function to run once googlemaps api is ready
     GoogleMaps.ready('map', function(map) {
-
-        // ================================================
-        // Define map icons
+    // ================================================
+    // initialization
+        // Define map symbols for tags and nodes
         var icons = {// Define Icons
             tag: {
-                name: 'Tag',
-                icon: {
-                  path: "M0,10L20,10L20,0L0,0z",
-                  fillColor: 'green',
-                  fillOpacity: 0.8,
-                  scale: 1,
-                  strokeWeight: 0,
-                  anchor: new google.maps.Point(10,5)
-                }},
+              name: 'Tag',
+              default: {
+                          path: "M0,10L20,10L20,0L0,0z",
+                          fillColor: 'green',
+                          fillOpacity: 0.8,
+                          scale: 1,
+                          strokeWeight: 0.5,
+                          anchor: new google.maps.Point(10,5)
+                        },
+              selected: {
+                          path: "M0,10L20,10L20,0L0,0z",
+                          fillColor: 'cyan',
+                          fillOpacity: 0.8,
+                          scale: 1,
+                          strokeWeight: 0.5,
+                          anchor: new google.maps.Point(10,5)
+                        },
+                    },
             node: {
-                name: 'Node',
-                icon: {
-                  path: "M0,20L10,0L20,20z",
-                  fillColor: 'green',
-                  fillOpacity: 0.8,
-                  scale: 1,
-                  strokeWeight: 0,
-                  anchor: new google.maps.Point(10,5)
-            }}
+              name: 'Node',
+              default:  {
+                          path: "M0,20L10,0L20,20z",
+                          fillColor: 'green',
+                          fillOpacity: 0.8,
+                          scale: 1,
+                          strokeWeight: 0.5,
+                          anchor: new google.maps.Point(10,5)
+                        },
+              selected: {
+                          path: "M0,20L10,0L20,20z",
+                          fillColor: 'cyan',
+                          fillOpacity: 0.8,
+                          scale: 1,
+                          strokeWeight: 0.5,
+                          anchor: new google.maps.Point(10,5)
+                        },
+                  }
         };
 
-        // Create arrays for node and tag pins
-        // These may need to be collections instead
-        var pins_nodes = [];
-        var pins_tags = [];
+        // Create Google Maps data layers for tags and nodes
+        nodeLayer = new google.maps.Data({
+          map: map.instance,
+          style: {
+            clickable: true,
+            icon: icons['node'].default
+          }
+        });
 
-        // ================================================
-        // Draw map legend
+        tagLayer = new google.maps.Data({
+          map:map.instance,
+          style: {
+            clickable: true,
+            icon: icons['tag'].default
+          }
+        });
+
+        // Create arrays for node and tag pins
+        var pins_nodes = {};
+        var pins_tags = {};
+        var textboxes = {};
+    // ================================================
+    // Draw map controls
+        // Draw Legend
         map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($('#legend')[0])
         for (var key in icons) {
           var type = icons[key];
           var name = type.name;
-          var icon = type.icon.path;
-          var color = type.icon.fillColor;
+          var icon = type.default.path;
+          var color = type.default.fillColor;
           var label = '<div><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</div>';
           $('#legend').append(label)
         }
-        // ================================================
-        /*
-        // Reactively update map
+        // Draw Info Box
+        map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#infobox')[0])
+
+    // ================================================
+    // Reactively update map
         self.autorun(function() {
+
           const nodes = Nodes.find().observe({
 
-            added: function(x) {
-              var latLng = new google.maps.LatLng({lat: x.gps.lat, lng: x.gps.lon});
-              addNode(latLng);
+            added: function(document) {
+              pin = addNode(document);
+              pins_nodes[document._id] = pin;
+              // console.log('added ' + pins_nodes[document._id].getId());
             },
 
-            changed: function(x) {},
+            changed: function(newDocument, oldDocument) {
+              var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
+              pins_nodes[newDocument._id].setGeometry(latLng);
+              txtbox = textboxes[oldDocument._id];
+              removeMapObject(txtbox);
+            },
 
-            removed: function(x) {}
+            removed: function(oldDocument) {
+              // console.log('removed ' + pins_nodes[oldDocument._id].getId());
+              txtbox = textboxes[oldDocument._id];
+              nodeLayer.remove(pins_nodes[oldDocument._id]);
+
+              removeMapObject(txtbox);
+              pins_nodes[oldDocument._id] = null;
+            }
 
           });
 
-          //const tags = tags.find().map(function(x) {
-          //});
+          // const tags = Tags.find().observe({
+          //
+          //   added: function(document) {
+          //     pin = addTag(document);
+          //     pins_tags[document._id] = pin;
+          //     // console.log('added ' + pins_tags[document._id].getId());
+          //   },
+          //
+          //   changed: function(newDocument, oldDocument) {
+          //     var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
+          //     pins_tags[newDocument._id].setGeometry(latLng);
+          //     txtbox = textboxes[oldDocument._id];
+          //     removeMapObject(txtbox);
+          //   },
+          //
+          //   removed: function(oldDocument) {
+          //     // console.log('removed ' + pins_nodes[oldDocument._id].getId());
+          //     txtbox = textboxes[oldDocument._id];
+          //     tagLayer.remove(pins_nodes[oldDocument._id]);
+          //
+          //     removeMapObject(txtbox);
+          //     pins_tags[oldDocument._id] = null;
+          //   }
+          //
+          // });
         });
-        */
-
-
-        //===================================================
-        // Google Map's listeners for testing
+    //===================================================
+    // Google Map's listeners for testing
         google.maps.event.addListener(map.instance, 'click',
-          function (event) {
-            addTag(event.latLng,0);
-            //Tags.insert({})
-        });
+          function (event) {});
         google.maps.event.addListener(map.instance, 'rightclick', function (event) {
-          addNode(event.latLng);
-          /*
           // Add node to database
                 Nodes.insert({
                     nodeID: Random.id(),
@@ -95,90 +162,114 @@ Template.mapContent.onCreated(function() {
                         timestamp: new Date()
                     }
                 });
-                */
         });
-        //====================================================
-        // Map functions
-        function displayCoordinates(latLng) {
-              // Function for writing google maps coords as string
-              var lat = latLng.lat();
-              lat = lat.toFixed(4);
-              var lng = latLng.lng();
-              lng = lng.toFixed(4);
-              return "Latitude: " + lat + "  Longitude: " + lng
-          }
 
-        function addTag(latLng,r) {
-          // Add tag marker and listeners
-          // Could set up so that tag json objects are passed instead
-          var tag = {
-              marker: addMarker(latLng,icons['tag'].icon),
-              circle: new google.maps.Circle({
-                strokeWeight: 0,
-                clickable: false,
-                fillColor: '#0b8080',
-                fillOpacity: 0.2,
-                map: map.instance,
-                center: latLng,
-                radius: r
-            })
-          }
-
-          pins_tags.push(tag);
-
-          var hovertxt = displayCoordinates(tag.marker.position)
-          var txt = hoverBox(tag.marker,hovertxt)
-
-          tag.marker.addListener('rightclick', function() { // For Testing
-            removeMapObject(tag.marker);
-            removeMapObject(tag.circle);
-            txt.setMap(null);
-            txt = null;
-            pins_tags.splice(pins_tags.indexOf(tag));
-          });
-        }
-
-        function addNode(latLng,pin_icon) {
-          // Add node marker and listeners
-          // Could set up so that node json objects are passed instead
-          var node = addMarker(latLng,icons['node'].icon);
-          pins_nodes.push(node);
-
-          var hovertxt = displayCoordinates(node.position)
-          var txt = hoverBox(node,hovertxt)
-
-          node.addListener('rightclick', function() { // For Testing
-            removeMapObject(node);
-            txt.setMap(null);
-            txt = null;
-            pins_nodes.splice(pins_nodes.indexOf(node))
-          });
-        }
-
-        function addMarker(latLng,pin_icon) {
-            // Function for creating base markers
-           var marker = new google.maps.Marker({
-                position: latLng,
-                map: map.instance,
-                icon: pin_icon,
+        nodeLayer.addListener('rightclick',
+            function (event) {
+              Nodes.remove(event.feature.getId());
             });
-            return marker;
+
+        // nodeLayer.addListener('click',
+        //     function (event) {
+        //       lat = (Random.fraction()*180) - 90;
+        //       lon = (Random.fraction()*360) - 180;
+        //
+        //       nodeLayer.overrideStyle(event.feature, {icon: icons['node'].selected});
+        //       Nodes.update(event.feature.getId(), { $set: {gps: { lat: lat, lon: lon}}});
+        //     });
+
+        tagLayer.addListener('rightclick',
+            function (event) {
+              nodeLayer.remove(event.feature);
+            });
+    //===================================================
+    // Google Maps listeners for displaying infoboxes
+        // Nodes: Mouseover event
+        nodeLayer.addListener('mouseover',
+            function (event) {
+              // console.log('mouseover: ' + event.feature.getId());
+              txt = event.feature.getProperty('text');
+              txtbox = hoverBox(event.latLng,txt);
+              textboxes[event.feature.getId()] = txtbox;
+              txtbox.show();
+            });
+        // Nodes: Mouseout event
+        nodeLayer.addListener('mouseout',
+            function (event) {
+              // console.log('mouseout: ' + event.feature.getId());
+              txtbox = textboxes[event.feature.getId()];
+              removeMapObject(txtbox);
+            });
+
+        // Nodes: Mouseover event
+        tagLayer.addListener('mouseover',
+            function (event) {
+              // console.log('mouseover: ' + event.feature.getId());
+              txt = event.feature.getProperty('text');
+              txtbox = hoverBox(event.latLng,txt);
+              textboxes[event.feature.getId()] = txtbox;
+              txtbox.show();
+            });
+        // Nodes: Mouseout event
+        tagLayer.addListener('mouseout',
+            function (event) {
+              // console.log('mouseout: ' + event.feature.getId());
+              txtbox = textboxes[event.feature.getId()];
+              removeMapObject(txtbox);
+            });
+
+    //====================================================
+    // Map functions
+        function nodeText(node) {
+
+          //console.log(node)
+          var txt = "<b>nodeID: </b>" + "<br> " + node.nodeID + "<br><br>" +
+                    "<b>GPS: </b>" + "<br> " +
+                    "<b>Lat: </b>" + "<br> " + node.gps.lat + "<br> " +
+                    "<b>Lon: </b>" + "<br> " + node.gps.lon + "<br> " +
+                    "<b>Timestamp: </b>" + "<br> " + node.gps.timestamp + "<br>";
+
+          return txt;
         }
 
-        function hoverBox(mapObj, hovertxt){
-          var latLng = mapObj.getPosition()
+        function addTag(tag) {
+          // Add tag marker
+          var latLng = new google.maps.LatLng({lat: node.gps.lat, lng: node.gps.lon});
 
+          var pin_tag = new google.maps.Data.Feature({
+            geometry: new google.maps.Data.Point(latLng),
+            id: node.nodeID,
+            properties: {
+              timestamp: node.gps.timestamp,
+              info: hoverBox(latLng,displayCoordinates(latLng))
+            }
+          });
+
+          var tag = tagLayer.add(pin_node);
+        }
+
+        function addNode(node) {
+          // Add node marker
+          var latLng = new google.maps.LatLng({lat: node.gps.lat, lng: node.gps.lon});
+
+          var pin_node = new google.maps.Data.Feature({
+            geometry: new google.maps.Data.Point(latLng),
+            id: node._id,
+            properties: {
+              nodeID: node.nodeID,
+              text: nodeText(node)
+            }
+          });
+
+          // console.log(pin_node);
+          // console.log(pin_node.getGeometry().get().lat());
+          // console.log(pin_node.getGeometry().get().lng());
+          return nodeLayer.add(pin_node);
+        }
+
+        function hoverBox(latLng, hovertxt){
           var txt = new TxtOverlay(latLng, hovertxt, "hoverBox", map.instance)
           txt.hide();
-
-          mapObj.addListener('mouseover', function() {
-            txt.show();
-          });
-
-          mapObj.addListener('mouseout', function() {
-            txt.hide();
-          });
-
           return txt;
         }
 
@@ -245,8 +336,6 @@ Template.mapContent.onCreated(function() {
             div.style.left = position.x + 'px';
             div.style.top = position.y + 'px';
 
-
-
         }
           //Optional: helper methods for removing and toggling the text overlay.
         TxtOverlay.prototype.onRemove = function() {
@@ -282,7 +371,7 @@ Template.mapContent.onCreated(function() {
             this.setMap(this.map_);
           }
         }
-        //====================================================
+    //====================================================
 
     });
 });
@@ -294,9 +383,10 @@ Template.mapContent.helpers({
             // Map initialization options
             return {
                 center: new google.maps.LatLng(34.066109, -106.907439),
-                zoom: 18,
-                minZoom: 16,
+                zoom: 18, // 18
+                minZoom: 16, // 16
                 disableDefaultUI: true,
+                fullscreenControl: true,
                 styles: [{
                     featureType: 'poi',
                     stylers: [{visibility: 'off'}]
