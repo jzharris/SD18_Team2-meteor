@@ -16,11 +16,13 @@
                     </h1>
                 </section>
 
-                <section class="content">
+                <section class="content" style="width:100%;">
 
-                    <!-- Your Page Content Here -->
-
-
+                  <ul class="messageWindow">
+                    {{#each nodeList}}
+                      {{> message}}
+                    {{/each}}
+                  </ul>
 
                 </section>
             </div>
@@ -28,4 +30,13 @@
         </div>
 
     </section>
+</template>
+
+<template name="message">
+  <li class="message">
+    <div class="nodeID">{{nodeID}}</div>
+    <div class="Latitude">{{gps.lat}}</div>
+    <div class="Longitude">{{gps.lon}}</div>
+    <div class="Timestamp">{{gps.timestamp}}</div>
+  </li>
 </template>
