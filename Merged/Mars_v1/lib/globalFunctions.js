@@ -75,3 +75,22 @@ dataPresent = function(origin) {
     Tags.findOne({sent: {$exists : true}, origin: origin})
 
 };
+
+triangulate = function(node_sel) {
+  // Averages the locations of several nodes.
+  // node_sel is an array containing the nodeID's selected for triangulation
+    var num = node_sel.length;
+    var lat = 0;
+    var lon = 0;
+
+    const nodes = Nodes.find({nodeID: {$in : node_sel}}).map(function(x) {
+      lat += x.gps.lat;
+      lon += x.gps.lon;
+    });
+
+    return {
+        lat: lat/num,
+        lon: lon/num
+    };
+
+};
