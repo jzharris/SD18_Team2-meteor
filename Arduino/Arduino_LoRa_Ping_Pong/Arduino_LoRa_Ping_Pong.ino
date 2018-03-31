@@ -21,7 +21,7 @@
  */
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//>> LoRa Gateway setup
+//>> LoRa Gateway defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <SPI.h>  
 // Include the SX1272
@@ -31,8 +31,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // please uncomment only 1 choice
 //
-#define ETSI_EUROPE_REGULATION
-//#define FCC_US_REGULATION
+//#define ETSI_EUROPE_REGULATION
+#define FCC_US_REGULATION
 //#define SENEGAL_REGULATION
 /////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
@@ -47,8 +47,8 @@
 // IMPORTANT
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // please uncomment only 1 choice
-#define BAND868
-//#define BAND900
+//#define BAND868
+#define BAND900
 //#define BAND433
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,31 +99,41 @@ uint8_t message[100];
 
 int loraMode=LORAMODE;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//<< LoRa Gateway setup
+//<< LoRa Gateway defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//>> I2C setup
-// - current message scheme: [CMD | PAYLOAD SIZE | PAYLOAD]
+//>> I2C defines
+// - current message scheme: [CMD | PAYLOAD]
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <Wire.h>
 // define default type of RPi:
-int RPiType = 0;            // 0: Server; 1: End-device
+//#define RPI_TYPE = 0;         // 0: Server; 1: End-device
 
 // define addresses of RPi's:
-int RPiServer = 0x53;       // 'S' for server
-int RPiEndDev = 0x45;       // 'E' for end-device
+#define RPI_SERVER        0x53  // 'S' for server
+//#define RPI_END_DEV 0x45      // 'E' for end-device
 
-// define the commands sent between Pi and Arduino:
-#define RPI_CMD_SEND      0   // Send data to RPi                       Payload: varies
-#define RPI_CMD_INTERR    1   // Send interrogation signal to Arduino   Payload: 0 bytes
-#define RPI_CMD_WATCHDOG  2   // Watchdog from Arduino to RPi           Payload: 0 bytes
+// define address of Arduino
+#define ARDU_ADDR         0x41  // 'A' for arduino
+
+// define the commands sent from Pi to Arduino:
+#define RPI_CMD_PING      0x00  // Ping for bootup                          Payload: 0 bytes
+#define RPI_CMD_SEND      0x11  // Send data to RPi                         Payload: N bytes
+#define RPI_CMD_INTERR    0x22  // Send interrogation signal through LoRa   Payload: ? bytes
+
+// define GPIO pin for RPi comms flag
+#define RPI_PIN_I2C       8     // RPi flag pin
+int ping_count = 0;             // Flag for pinging
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//<< I2C setup
+//<< I2C defines
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void setup()
 {
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //>> LoRa Gateway setup
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   int e;
   
   // Open serial communications and wait for port to open:
@@ -236,8 +246,49 @@ void setup()
   
   // Print a success message
   PRINT_CSTSTR("%s","SX1272 successfully configured\n");
-
+  
   delay(500);
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //<< LoRa Gateway setup
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //>> I2C setup
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Serial.print("\nInitializing I2C\n");
+
+  pinMode(RPI_PIN_I2C, OUTPUT);           // Set pin to output
+  digitalWrite(RPI_PIN_I2C, LOW);         // Init to low
+
+  Wire.begin(ARDU_ADDR);                  // Initiate the Wire library with self-assigned address
+  Wire.onReceive(receiveEvent);           // Register event
+
+  // Ping RPi to test communications
+  ping_count = 0;
+  digitalWrite(RPI_PIN_I2C, HIGH);
+
+//  Wire.beginTransmission(RPiServer);    // Begin transmission
+//  Wire.write(RPI_CMD_PING);             // Send Ping command to RPi
+//  Wire.write(ping_send);                // Send Ping byte to confirm
+//  Wire.endTransmission();               // End transmission
+//
+//  Wire.requestFrom(RPiServer, 1);       // Begin read
+//  int ping_receive = 0;
+//  if(Wire.available()<=1) {
+//    ping_receive = Wire.read();         // Read ping byte
+//  }
+//
+//  if(ping_receive == ping_send) {       // Ping should return ping_sent
+//    Serial.print("RPi exists!\n");
+//  } else {
+//    Serial.print("RPi not found\n");
+//  }
+
+  Serial.print("\n");
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  //<< I2C setup
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
 }
 
 
@@ -281,4 +332,48 @@ void loop(void)
       
       delay(10000);    
   }          
+}
+
+// function that executes whenever data is received from master
+// this function is registered as an event, see setup()
+void receiveEvent(int numBytes) {
+  if(Wire.available() > 0) {
+    int cmd = Wire.read();
+
+    // parse cmd:
+    switch (cmd) {
+      case RPI_CMD_PING:
+                                                // Ping from RPi, initiated by RPi
+        Wire.beginTransmission(RPI_SERVER);     // Begin transmission to RPi
+        Wire.write(RPI_CMD_PING);               // Send Ping command to RPi
+        Wire.endTransmission();                 // End transmission
+        
+        ping_count += 1;
+        digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
+        break;
+      case RPI_CMD_SEND:
+        if(ping_count == 0) {
+                                                // Initial boot-up ping from RPi, initiated when Arduino boots up
+          Wire.beginTransmission(RPI_SERVER);   // Begin transmission to RPi
+          Wire.write(RPI_CMD_PING);             // Send Ping command to RPi
+          Wire.endTransmission();               // End transmission
+          
+          ping_count += 1;
+          digitalWrite(RPI_PIN_I2C, LOW);       // Assume request was resolved, turn off flag pin
+        } else {
+                                                // Send-data request from Pi, can be initiated by Arduino
+          
+          digitalWrite(RPI_PIN_I2C, LOW);       // Assume request was resolved, turn off flag pin
+        }
+        break;
+      case RPI_CMD_INTERR:
+                                                // Pass the interrogation signal along the network
+        
+        digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
+        break;
+      default:
+        Serial.print("\n I2C command from RPi not recognized.\n");
+    }
+    
+  }
 }
