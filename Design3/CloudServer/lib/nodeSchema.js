@@ -44,19 +44,15 @@ NodeSchema = new SimpleSchema({
         type: Number,
         label: "Tag handle limit"
     },
-    battery: {
+    arduino: {
         type: Object,
-        label: "Battery object"
+        label: "Arduino status"
     },
-    'battery.voltage': {
+    'arduino.ping': {
         type: Number,
-        label: "Voltage of battery"
+        label: "Ping count of Arduino"
     },
-    'battery.amperage': {
-        type: Number,
-        label: "Amperage of battery"
-    },
-    'battery.timestamp': {
+    'arduino.timestamp': {
         type: Date,
         label: "Timestamp of measurement"
     },

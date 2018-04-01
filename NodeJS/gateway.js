@@ -1,14 +1,16 @@
-var DDPClient = require("ddp");
-var i2c = require('i2c');
-var Gpio = require('onoff').Gpio;
+var DDPClient		= require("ddp");
+var i2c			= require('i2c');
+var Gpio		= require('onoff').Gpio;
+var timestamp		= require('time-stamp');
 
-var ARDU_ADDR		= 0x41	// 'A' for arduino
+var ARDU_ADDR		= 0x41;	// 'A' for arduino
 
-var RPI_CMD_PING	= 0x00	// Ping for bootup				Payload: 0 bytes
-var RPI_CMD_SEND	= 0x11	// Send data to RPi				Payload: N bytes
-var RPI_CMD_INTERR	= 0x22	// Send interrogation signal through LoRa	Payload: ? bytes
+var RPI_CMD_PING	= 0x00;	// Ping for bootup				Payload: 0 bytes
+var RPI_CMD_SEND	= 0x11;	// Send data to RPi				Payload: N bytes
+var RPI_CMD_INTERR	= 0x22;	// Send interrogation signal through LoRa	Payload: ? bytes
 
-var RPI_PIN_I2C		= 8	// RPi flag pin
+var RPI_PIN_I2C		= 8;	// RPi flag pin
+var nodeID		= 0;	// The node ID used by LoRa, assigned by server
 
 var ddpclient = new DDPClient({
 	// All properties optional, defaults shown
@@ -29,7 +31,8 @@ ddpclient.connect(function(error, wasReconnect) {
 	// If autoReconnect is true, this callback will be invoked each time
 	// a server connection is re-established
 	if (error) {
-		console.log('DDP connection error!');
+		console.log('DDP connection error! Blink LED here');
+		//TODO: blink LED here
 		return;
 	}
 
@@ -39,34 +42,27 @@ ddpclient.connect(function(error, wasReconnect) {
 
 	console.log('connected!');
 
-	setTimeout(function () {
-		/*
-		 * Call a Meteor Method
-		 */
-		/*
-		ddpclient.call(
-			'testMethod',						 // name of Meteor Method being called
-			['foo', 'bar'],						// parameters to send to Meteor Method
-			function (err, result) {	 // callback which returns the method call results
-				console.log('called function, result: ' + result);
-			},
-			function () {							// callback which fires when server has finished
-				console.log('updated');	// sending any updated documents as a result of
-				 // calling this method
-			}
-		);
-		*/
-	}, 3000);
-
 	/*
-	 * Subscribe to a Meteor Collection
+	 * Call method to assign node in network
 	 */
-	ddpclient.subscribe(
-		'nodes',									// name of Meteor Publish function to subscribe to
-		[],											 // any parameters used by the Publish function
-		function () {						 // callback when the subscription is complete
-			console.log('nodes:');
-			console.log(ddpclient.collections.nodes);
+	ddpclient.call(
+		'assignNode',
+		[],
+		function (err, result) {
+			if(err) {
+				console.log('Could not call -assignNode- server method');
+				return;
+			}
+
+			nodeID = result;
+			console.log('Assigned node ID: ', nodeID);
+			ddpclient.subscribe(
+				'node',
+				[nodeID],
+				function () {
+					console.log('Subscribed to node information');
+				}
+			);
 		}
 	);
 
@@ -102,23 +98,67 @@ ddpclient.connect(function(error, wasReconnect) {
 			console.error('There was an error', err); //output error message to console
 			return;
 		}
-		console.log("i2c_flag is high!");
 
-		// Arduino has something to say, request over I2C
-		wire.writeByte(RPI_CMD_SEND, function(err) {
-			if (err) {
-				console.error('There was an error', err); //output error message to console
-			} else {
-				console.log('Sent through i2c! Time to read...');
+		if(watchdog == 0) {
+			// Arduino has booted up, ping over I2C
+			wire.writeByte(RPI_CMD_PING, function(err) {
+				watchdog = timestamp('ms')-1;
+				sendWatchDog();
+			});
 
-				wire.readByte(function(err, res) {
-					if (err) {
-						console.error('There was an error', err); //output error message to console
-					} else {
-						console.log('Pong: ', res);
-					}
-				});
-			}
-		});
+			arduino.ping = 0;
+			arduino.timeStamp = timestamp('ms');
+		} else {
+			// Arduino has something to say, request over I2C
+			wire.writeByte(RPI_CMD_SEND, function(err) {
+				if(!err) {
+					console.log('read arduino here');
+				}
+			});
+		}
 	});
 });
+
+// Watch-Dog timer will ping Arduino for every 60 second interval of no response
+var watchdog = 0;
+var sendWatchDog = function () {
+	setTimeout(function () {
+		if(timestamp('ms') - watchdog > 60000) {
+			pingArduino();
+		}
+		sendWatchDog();
+	}, 60000);
+};
+
+var arduino = {
+	ping: -1,
+	timeStamp: 0
+};
+var pingArduino = function () {
+	wire.writeByte(RPI_CMD_PING, recordPong);
+};
+
+var recordPong = function (err) {
+	if (err) {
+		console.error('There was an error', err); //output error message to console
+		ddpclient.call(
+			'arduinoStatus',
+			[nodeID, 'disconnected'],
+			function (err, result) {
+				if(err) {
+					console.log('Could not call -arduinoStatus- server method');
+					return;
+				}
+			}
+		);
+	} else {
+		console.log('Need to record the pong..read from Arduino');
+		/*
+		wire.readByte(function(err, res) {
+			if(!err) {
+				console.log('Pong: ', res);
+			}
+		});
+		*/
+	}
+};
