@@ -11,8 +11,8 @@ node = function() {
             timestamp: new Date()
         },
         gps: {
-            lat: Random.fraction()*1000,
-            lon: Random.fraction()*1000,
+            lat: (Random.fraction()*180) - 90,
+            lon: (Random.fraction()*360) - 180,
             timestamp: new Date()
         }
     };
