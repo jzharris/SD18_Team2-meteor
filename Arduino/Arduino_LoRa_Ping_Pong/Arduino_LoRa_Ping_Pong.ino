@@ -259,6 +259,7 @@ void setup()
 
   pinMode(RPI_PIN_I2C, OUTPUT);           // Set pin to output
   digitalWrite(RPI_PIN_I2C, LOW);         // Init to low
+  delay(100);
 
   Wire.begin(ARDU_ADDR);                  // Initiate the Wire library with self-assigned address
   Wire.onReceive(receiveEvent);           // Register event
@@ -267,24 +268,7 @@ void setup()
   ping_count = 0;
   digitalWrite(RPI_PIN_I2C, HIGH);
 
-//  Wire.beginTransmission(RPiServer);    // Begin transmission
-//  Wire.write(RPI_CMD_PING);             // Send Ping command to RPi
-//  Wire.write(ping_send);                // Send Ping byte to confirm
-//  Wire.endTransmission();               // End transmission
-//
-//  Wire.requestFrom(RPiServer, 1);       // Begin read
-//  int ping_receive = 0;
-//  if(Wire.available()<=1) {
-//    ping_receive = Wire.read();         // Read ping byte
-//  }
-//
-//  if(ping_receive == ping_send) {       // Ping should return ping_sent
-//    Serial.print("RPi exists!\n");
-//  } else {
-//    Serial.print("RPi not found\n");
-//  }
-
-  Serial.print("\n");
+  Serial.print("done!\n\n");
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //<< I2C setup
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,58 +278,24 @@ void setup()
 
 void loop(void)
 {
-  uint8_t r_size;
-  int e;
-
-  sx1272.CarrierSense();
-
-  sx1272.setPacketType(PKT_TYPE_DATA);
-
-  r_size=sprintf((char*)message, "Ping");
-      
-  while (1) {
-
-      PRINT_CSTSTR("%s","Sending Ping");  
-      PRINTLN;
-            
-      e = sx1272.sendPacketTimeoutACK(DEFAULT_DEST_ADDR, message, r_size);
-
-      // this is the no-ack version
-      // e = sx1272.sendPacketTimeout(DEFAULT_DEST_ADDR, message, r_size);
-            
-      PRINT_CSTSTR("%s","Packet sent, state ");
-      PRINT_VALUE("%d", e);
-      PRINTLN;
-      
-      if (e==3)
-          PRINT_CSTSTR("%s","No Pong from gw!");
-        
-      if (e==0) {
-          char message[20];
-          sprintf(message,"SNR at gw=%d   ", sx1272._rcv_snr_in_ack);
-          PRINT_CSTSTR("%s","Pong received from gateway!");
-          PRINTLN;
-          PRINT_STR("%s", message);      
-      }      
-
-      PRINTLN;
-      
-      delay(10000);    
-  }          
+  delay(100);
 }
 
-// function that executes whenever data is received from master
-// this function is registered as an event, see setup()
+// needed for some reason...do not remove
 void receiveEvent(int numBytes) {
+  Serial.println(numBytes);
   if(Wire.available() > 0) {
     int cmd = Wire.read();
 
     // parse cmd:
     switch (cmd) {
       case RPI_CMD_PING:
+
+        Serial.println("I2C ping from RPi, sending pong");
+        
                                                 // Ping from RPi, initiated by RPi
         Wire.beginTransmission(RPI_SERVER);     // Begin transmission to RPi
-        Wire.write(RPI_CMD_PING);               // Send Ping command to RPi
+        Wire.write(ping_count);                 // Send self address back as pong
         Wire.endTransmission();                 // End transmission
         
         ping_count += 1;
@@ -353,27 +303,27 @@ void receiveEvent(int numBytes) {
         break;
       case RPI_CMD_SEND:
         if(ping_count == 0) {
-                                                // Initial boot-up ping from RPi, initiated when Arduino boots up
+          Serial.println("I2C init from RPi, sending pong");
+                                                // Initial boot-up ping from RPi, initiated by Arduino
           Wire.beginTransmission(RPI_SERVER);   // Begin transmission to RPi
-          Wire.write(RPI_CMD_PING);             // Send Ping command to RPi
+          Wire.write(100);               // Send self address back as pong
           Wire.endTransmission();               // End transmission
           
           ping_count += 1;
           digitalWrite(RPI_PIN_I2C, LOW);       // Assume request was resolved, turn off flag pin
         } else {
+          Serial.println("I2C send request from RPi, sending data");
                                                 // Send-data request from Pi, can be initiated by Arduino
-          
           digitalWrite(RPI_PIN_I2C, LOW);       // Assume request was resolved, turn off flag pin
         }
         break;
       case RPI_CMD_INTERR:
+        Serial.println("I2C interrogation request, pass along and send acknowledge");
                                                 // Pass the interrogation signal along the network
-        
         digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
         break;
       default:
-        Serial.print("\n I2C command from RPi not recognized.\n");
+        Serial.println("I2C command from RPi not recognized...\n");
     }
-    
   }
 }
