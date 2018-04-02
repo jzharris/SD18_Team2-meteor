@@ -1,8 +1,8 @@
 
 .messageWindow {
   position: absolute;
-  padding-right: 10px;
-  padding-left: 10px;
+  padding-right: 1px;
+  padding-left: 1px;
   width: 100%;
   height: 100%;
   background: white;
@@ -20,4 +20,17 @@
 
 .nodeID {
   font-weight: bold;
+}
+
+#outer-table{
+  width: 100%;
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+#top-heading{
+  background: #5c8a8a;
+  color: white;
+  padding-right: 10px;
+  padding-left: 10px;
 }

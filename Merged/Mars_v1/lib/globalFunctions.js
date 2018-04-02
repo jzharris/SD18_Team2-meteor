@@ -94,3 +94,24 @@ triangulate = function(node_sel) {
     };
 
 };
+
+Icon = function(name,color) {
+    if (name == 'Tag'){
+      this.path = "M0,10L20,10L20,0L0,0z";
+    } else {
+      this.path = "M0,20L10,0L20,20z";
+    }
+    this.fillColor = color;
+    this.fillOpacity = 0.8;
+    this.scale = 1;
+    this.strokeWeight = 0.5;
+
+    return {
+      path: this.path,
+      fillColor: this.fillColor,
+      fillOpacity: this.fillOpacity,
+      scale: this.scale,
+      strokeWeight: this.strokeWeight,
+      anchor: new google.maps.Point(10,5)
+    }
+}

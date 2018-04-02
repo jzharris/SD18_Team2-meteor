@@ -2,51 +2,49 @@ import { Random } from 'meteor/random';
 
 Template.mapContent.onCreated(function() {
     var self = this;
+
+    // Meteor.setInterval(function() {
+    //
+    //     console.log("inserting");
+    //     Nodes.insert(node());
+    //
+    //     if(Random.fraction() < 0.25) {
+    //
+    //         const nodeID = Random.id();
+    //         const tagID = Random.id();
+    //
+    //         let arr = [];
+    //         for (let i = 1; i <= 10; i++) {
+    //             arr.push(i);
+    //         }
+    //
+    //         //random number of tag events between 1 and 10
+    //         for (let i = 0; i < Random.choice(arr); i++) {
+    //             Tags.insert(tag(nodeID, tagID));
+    //         }
+    //     }
+    //
+    // }, 60000);
+
 // ================================================
 // Function to run once googlemaps api is ready
     GoogleMaps.ready('map', function(map) {
     // ================================================
-    // initialization
+    // Setup common variables
         // Define map symbols for tags and nodes
-        var icons = {// Define Icons
+        var icons = {
             tag: {
               name: 'Tag',
-              default: {
-                          path: "M0,10L20,10L20,0L0,0z",
-                          fillColor: 'green',
-                          fillOpacity: 0.8,
-                          scale: 1,
-                          strokeWeight: 0.5,
-                          anchor: new google.maps.Point(10,5)
-                        },
-              selected: {
-                          path: "M0,10L20,10L20,0L0,0z",
-                          fillColor: 'cyan',
-                          fillOpacity: 0.8,
-                          scale: 1,
-                          strokeWeight: 0.5,
-                          anchor: new google.maps.Point(10,5)
-                        },
-                    },
+              default: new Icon('Tag','LimeGreen'),
+              selected: new Icon('Tag','LightBlue'),
+              alert: new Icon('Tag','OrangeRed')
+            },
             node: {
               name: 'Node',
-              default:  {
-                          path: "M0,20L10,0L20,20z",
-                          fillColor: 'green',
-                          fillOpacity: 0.8,
-                          scale: 1,
-                          strokeWeight: 0.5,
-                          anchor: new google.maps.Point(10,5)
-                        },
-              selected: {
-                          path: "M0,20L10,0L20,20z",
-                          fillColor: 'cyan',
-                          fillOpacity: 0.8,
-                          scale: 1,
-                          strokeWeight: 0.5,
-                          anchor: new google.maps.Point(10,5)
-                        },
-                  }
+              default: new Icon('Node','LimeGreen'),
+              selected: new Icon('Node','LightBlue'),
+              alert: new Icon('Node','OrangeRed')
+            }
         };
 
         // Create Google Maps data layers for tags and nodes
@@ -54,7 +52,7 @@ Template.mapContent.onCreated(function() {
           map: map.instance,
           style: {
             clickable: true,
-            icon: icons['node'].default
+            icon: icons.node.default
           }
         });
 
@@ -62,14 +60,12 @@ Template.mapContent.onCreated(function() {
           map:map.instance,
           style: {
             clickable: true,
-            icon: icons['tag'].default
+            icon: icons.tag.default
           }
         });
 
-        // Create arrays for node and tag pins
-        var pins_nodes = {};
-        var pins_tags = {};
-        var textboxes = {};
+
+        var textbox = ''
     // ================================================
     // Draw map controls
         // Draw Legend
@@ -92,54 +88,57 @@ Template.mapContent.onCreated(function() {
           const nodes = Nodes.find().observe({
 
             added: function(document) {
-              pin = addNode(document);
-              pins_nodes[document._id] = pin;
-              // console.log('added ' + pins_nodes[document._id].getId());
+              addNode(document);
             },
 
             changed: function(newDocument, oldDocument) {
               var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
-              pins_nodes[newDocument._id].setGeometry(latLng);
-              txtbox = textboxes[oldDocument._id];
+
+              var pin = nodeLayer.getFeatureById(oldDocument.nodeID);
+              pin.setGeometry(latLng);
               removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
-              // console.log('removed ' + pins_nodes[oldDocument._id].getId());
-              txtbox = textboxes[oldDocument._id];
-              nodeLayer.remove(pins_nodes[oldDocument._id]);
+
+              var pin = nodeLayer.getFeatureById(oldDocument.nodeID);
+              if (typeof pin !== 'undefined'){
+                // Node is already plotted on map
+                // Remove exsisting marker
+                nodeLayer.remove(pin);
+                removeMapObject(txtbox);
+
+                console.log('Removed map marker for node: ' + oldDocument.nodeID);
+              }
+            }
+          });
+
+          const tags = Tags.find().observe({
+
+            added: function(document) {
+              addTag(document);
+
+            },
+
+            changed: function(newDocument, oldDocument) {
+              var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
+
+              var pin = tagLayer.getFeatureById(oldDocument._id);
+              pin.setGeometry(latLng);
 
               removeMapObject(txtbox);
-              pins_nodes[oldDocument._id] = null;
+            },
+
+            removed: function(oldDocument) {
+
+              var pin = tagLayer.getFeatureById(oldDocument._id);
+
+              console.log('Removed map marker for tag: ' + oldDocument.nodeID);
+              tagLayer.remove(pin);
+              removeMapObject(txtbox);
             }
 
           });
-
-          // const tags = Tags.find().observe({
-          //
-          //   added: function(document) {
-          //     pin = addTag(document);
-          //     pins_tags[document._id] = pin;
-          //     // console.log('added ' + pins_tags[document._id].getId());
-          //   },
-          //
-          //   changed: function(newDocument, oldDocument) {
-          //     var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
-          //     pins_tags[newDocument._id].setGeometry(latLng);
-          //     txtbox = textboxes[oldDocument._id];
-          //     removeMapObject(txtbox);
-          //   },
-          //
-          //   removed: function(oldDocument) {
-          //     // console.log('removed ' + pins_nodes[oldDocument._id].getId());
-          //     txtbox = textboxes[oldDocument._id];
-          //     tagLayer.remove(pins_nodes[oldDocument._id]);
-          //
-          //     removeMapObject(txtbox);
-          //     pins_tags[oldDocument._id] = null;
-          //   }
-          //
-          // });
         });
     //===================================================
     // Google Map's listeners for testing
@@ -166,17 +165,29 @@ Template.mapContent.onCreated(function() {
 
         nodeLayer.addListener('rightclick',
             function (event) {
-              Nodes.remove(event.feature.getId());
+              Nodes.find({nodeID: event.feature.getId()}).forEach(
+                function(document){
+                    Nodes.remove(document._id);
+                });
             });
 
-        // nodeLayer.addListener('click',
-        //     function (event) {
-        //       lat = (Random.fraction()*180) - 90;
-        //       lon = (Random.fraction()*360) - 180;
-        //
-        //       nodeLayer.overrideStyle(event.feature, {icon: icons['node'].selected});
-        //       Nodes.update(event.feature.getId(), { $set: {gps: { lat: lat, lon: lon}}});
-        //     });
+        nodeLayer.addListener('click', function (event) {
+          Nodes.insert({
+              nodeID: event.feature.getId(),
+              nodeVersion: '1.0.0',
+              nodeType: 'Tester',
+              battery: {
+                  voltage: Random.fraction()*10,
+                  amperage: Random.fraction()*2,
+                  timestamp: new Date()
+              },
+              gps: {
+                  lat: (Random.fraction()*180) - 90,
+                  lon: (Random.fraction()*360) - 180,
+                  timestamp: new Date()
+              }
+          });
+        });
 
         tagLayer.addListener('rightclick',
             function (event) {
@@ -188,60 +199,46 @@ Template.mapContent.onCreated(function() {
         nodeLayer.addListener('mouseover',
             function (event) {
               // console.log('mouseover: ' + event.feature.getId());
-              txt = event.feature.getProperty('text');
-              txtbox = hoverBox(event.latLng,txt);
-              textboxes[event.feature.getId()] = txtbox;
+              txtbox = hoverBox(event.latLng,event.feature.getProperty('text'));
               txtbox.show();
             });
         // Nodes: Mouseout event
         nodeLayer.addListener('mouseout',
             function (event) {
               // console.log('mouseout: ' + event.feature.getId());
-              txtbox = textboxes[event.feature.getId()];
               removeMapObject(txtbox);
             });
-
         // Nodes: Mouseover event
         tagLayer.addListener('mouseover',
             function (event) {
               // console.log('mouseover: ' + event.feature.getId());
-              txt = event.feature.getProperty('text');
+              var txt = event.feature.getProperty('text');
               txtbox = hoverBox(event.latLng,txt);
-              textboxes[event.feature.getId()] = txtbox;
               txtbox.show();
             });
         // Nodes: Mouseout event
         tagLayer.addListener('mouseout',
             function (event) {
               // console.log('mouseout: ' + event.feature.getId());
-              txtbox = textboxes[event.feature.getId()];
               removeMapObject(txtbox);
             });
 
     //====================================================
     // Map functions
-        function nodeText(node) {
-
-          //console.log(node)
-          var txt = "<b>nodeID: </b>" + "<br> " + node.nodeID + "<br><br>" +
-                    "<b>GPS: </b>" + "<br> " +
-                    "<b>Lat: </b>" + "<br> " + node.gps.lat + "<br> " +
-                    "<b>Lon: </b>" + "<br> " + node.gps.lon + "<br> " +
-                    "<b>Timestamp: </b>" + "<br> " + node.gps.timestamp + "<br>";
-
-          return txt;
-        }
 
         function addTag(tag) {
           // Add tag marker
-          var latLng = new google.maps.LatLng({lat: node.gps.lat, lng: node.gps.lon});
+          var pin = tagLayer.getFeatureById(tag.tagID);
+
+
+          var latLng = new google.maps.LatLng({lat: tag.gps.lat, lng: tag.gps.lon});
 
           var pin_tag = new google.maps.Data.Feature({
             geometry: new google.maps.Data.Point(latLng),
-            id: node.nodeID,
+            id: tag.tagID,
             properties: {
-              timestamp: node.gps.timestamp,
-              info: hoverBox(latLng,displayCoordinates(latLng))
+              timestamp: tag.sent,
+              info: 'test'
             }
           });
 
@@ -250,16 +247,34 @@ Template.mapContent.onCreated(function() {
 
         function addNode(node) {
           // Add node marker
+          var pin = nodeLayer.getFeatureById(node.nodeID);
           var latLng = new google.maps.LatLng({lat: node.gps.lat, lng: node.gps.lon});
+          var txt = "<b>nodeID: </b>" + "<br> " + node.nodeID + "<br><br>" +
+                    "<b>GPS: </b>" + "<br> " +
+                    "<b>Lat: </b>" + "<br> " + node.gps.lat + "<br> " +
+                    "<b>Lon: </b>" + "<br> " + node.gps.lon + "<br> " +
+                    "<b>Timestamp: </b>" + "<br> " + node.gps.timestamp + "<br>";
 
-          var pin_node = new google.maps.Data.Feature({
-            geometry: new google.maps.Data.Point(latLng),
-            id: node._id,
-            properties: {
-              nodeID: node.nodeID,
-              text: nodeText(node)
-            }
-          });
+          if (typeof pin !== 'undefined'){
+            // Node is already plotted on map
+            // Update map data
+            console.log('Updating map marker for node: ' + node.nodeID);
+            pin.setGeometry(latLng);
+            pin.setProperty('text',txt);
+
+          } else {
+            // Node is not already plotted on map
+            // Plot new node marker
+            console.log('Creating new map marker for node: ' + node.nodeID);
+            var pin_node = new google.maps.Data.Feature({
+              geometry: new google.maps.Data.Point(latLng),
+              id: node.nodeID,
+              properties: {
+                docID: node._id,
+                text: txt
+              }
+            });
+          }
 
           // console.log(pin_node);
           // console.log(pin_node.getGeometry().get().lat());
@@ -274,8 +289,11 @@ Template.mapContent.onCreated(function() {
         }
 
         function removeMapObject(object) {
-            // Function for removing markers from the map
-            object.setMap(null);
+            // Function for removing objectss from the map
+            if (typeof object !== 'undefined'){
+              // Check if object exsists
+              object.setMap(null);
+            }
         }
 
         function TxtOverlay(pos, txt, cls, map) {
@@ -383,8 +401,8 @@ Template.mapContent.helpers({
             // Map initialization options
             return {
                 center: new google.maps.LatLng(34.066109, -106.907439),
-                zoom: 18, // 18
-                minZoom: 16, // 16
+                zoom: 0, // 18
+                minZoom: 0, // 16
                 disableDefaultUI: true,
                 fullscreenControl: true,
                 styles: [{

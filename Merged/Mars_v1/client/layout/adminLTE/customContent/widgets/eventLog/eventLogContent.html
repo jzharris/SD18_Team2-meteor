@@ -19,8 +19,29 @@
                 <section class="content" style="width:100%;">
 
                   <ul class="messageWindow">
-                    {{#each nodeList}}
-                      {{> message}}
+
+                    {{#each nodeListFull}}
+                    <table class="table table-fixed table-striped" id="outer-table">
+                        <thead id="top-heading">
+                          <td><h4>Node ID: </h4></td>
+                          <td><h4>{{nodeID}}</h4></td>
+                        </thead>
+                        <tbody>
+                          <tr data-target="{{nodeID}}">
+                            <td>Latitude: </td>
+                            <td>{{gps.lat}}</td>
+                          </tr>
+                          <tr>
+                            <td>Longitude: </td>
+                            <td>{{gps.lon}}</td>
+                          </tr>
+                          <tr>
+                            <td>Timestamp:</td>
+                            <td>{{gps.timestamp}}</td>
+                          </tr>
+                        </tbody>
+
+                      </table>
                     {{/each}}
                   </ul>
 
@@ -34,9 +55,6 @@
 
 <template name="message">
   <li class="message">
-    <div class="nodeID">{{nodeID}}</div>
-    <div class="Latitude">{{gps.lat}}</div>
-    <div class="Longitude">{{gps.lon}}</div>
-    <div class="Timestamp">{{gps.timestamp}}</div>
+
   </li>
 </template>
