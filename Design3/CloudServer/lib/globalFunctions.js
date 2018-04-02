@@ -75,3 +75,11 @@ dataPresent = function(origin) {
     Tags.findOne({sent: {$exists : true}, origin: origin})
 
 };
+
+nodeArray = [];
+assignNode = function() {
+    const newID = nodeArray.length+1;
+    nodeArray.push(newID);
+
+    return newID;
+};
