@@ -1,7 +1,7 @@
 var DDPClient		= require("ddp");
 var i2c			= require('i2c');
 var Gpio		= require('onoff').Gpio;
-var timestamp		= require('time-stamp');
+var timestamp		= require('timestamp');
 
 var ARDU_ADDR		= 0x41;	// 'A' for arduino
 
@@ -88,7 +88,7 @@ ddpclient.connect(function(error, wasReconnect) {
 	*/
 
 	// set up I2C
-	var wire = new i2c(ARDU_ADDR, {device: '/dev/i2c-1'}); // point to your i2c address, debug provides REPL interface
+	wire = new i2c(ARDU_ADDR, {device: '/dev/i2c-1'}); // point to your i2c address, debug provides REPL interface
 
 	// set up I2C flag
 	var i2c_flag = new Gpio(RPI_PIN_I2C, 'in', 'rising'); //use GPIO pin 4 as output
@@ -101,8 +101,16 @@ ddpclient.connect(function(error, wasReconnect) {
 
 		if(watchdog == 0) {
 			// Arduino has booted up, ping over I2C
+			console.log('Arduino has booted up, pinging over I2C');
 			wire.writeByte(RPI_CMD_PING, function(err) {
-				watchdog = timestamp('ms')-1;
+				if(!err) {
+					wire.readByte(function(err, res) {
+						if(!err) {
+							console.log('pong: ', res);
+						}
+					});
+				}
+				watchdog = timestamp();
 				sendWatchDog();
 			});
 
@@ -123,8 +131,9 @@ ddpclient.connect(function(error, wasReconnect) {
 var watchdog = 0;
 var sendWatchDog = function () {
 	setTimeout(function () {
-		if(timestamp('ms') - watchdog > 60000) {
+		if(timestamp() - watchdog > 60000) {
 			pingArduino();
+			watchdog = timestamp();
 		}
 		sendWatchDog();
 	}, 60000);
@@ -152,13 +161,10 @@ var recordPong = function (err) {
 			}
 		);
 	} else {
-		console.log('Need to record the pong..read from Arduino');
-		/*
 		wire.readByte(function(err, res) {
 			if(!err) {
 				console.log('Pong: ', res);
 			}
 		});
-		*/
 	}
 };
