@@ -51,7 +51,7 @@
             </div>
 
             <div class="row">
-                <h3>Log</h3>
+                <h3>Log <a href="#"><span class="badge">{{nodeCount}}</span></a></h3>
                 {{#if nodeInLog}}
                     <ol>
                         {{#each nodesInLog}}
@@ -99,7 +99,7 @@
             </div>
 
             <div class="row">
-                <h3>Log</h3>
+                <h3>Log <a href="#"><span class="badge">{{tagCount}}</span></a></h3>
                 {{#if tagInLog}}
                     <ol>
                         {{#each tagsInLog}}
@@ -138,10 +138,16 @@
                     {{#if cloudAvg}}
                         Cloud update avg: <span style="color:{{getCloudColor}}">{{cloudAvg}}</span> ms<br>
                     {{/if}}
-                    {{#if fogAvg}}
-                        Fog update avg: <span style="color:{{getFogColor}}">{{fogAvg}}</span> ms<br>
-                    {{/if}}
                 </div>
+            </div>
+
+            <div class="row">
+                <h2>Wait Time
+                    <div class="form form-inline pull-right" style="margin-right: 40px;">
+                        <input type="number" class="form-control" id="waitTime" value="{{waitTime}}">
+                    </div>
+                </h2>
+                <hr style="margin-right: 10px; margin-left: 10px;">
             </div>
 
         </div>

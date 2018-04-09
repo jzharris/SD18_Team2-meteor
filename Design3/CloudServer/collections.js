@@ -4,3 +4,5 @@ Status = new Mongo.Collection('status');
 
 Nodes = new Mongo.Collection('nodes');
 Tags = new Mongo.Collection('tags');
+
+GUI = new Mongo.Collection('gui');

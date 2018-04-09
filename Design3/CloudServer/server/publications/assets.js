@@ -11,3 +11,7 @@ Meteor.publish('node', function(nodeID) {
 Meteor.publish('tags', function() {
     return Tags.find();
 });
+
+Meteor.publish('gui', function() {
+    return GUI.find();
+});

@@ -5,16 +5,11 @@ node = function() {
         nodeID: Random.id(),
         nodeVersion: '1.0.0',
         nodeType: 'Tester',
-        battery: {
-            voltage: Random.fraction()*10,
-            amperage: Random.fraction()*2,
-            timestamp: new Date()
-        },
         gps: {
             lat: Random.fraction()*1000,
             lon: Random.fraction()*1000,
             timestamp: new Date()
-        }
+        },
     };
 };
 
@@ -25,9 +20,9 @@ tag = function(nodeID, tagID) {
         arr.push(i);
     }
 
-    //random number of measurements between 1 and 10
+    //2 measurements
     let measure = [];
-    for (let i = 0; i < Random.choice(arr); i++) {
+    for (let i = 0; i < 2; i++) {
         measure.push({
             type: 'Type',
             label: 'Label',

@@ -1,4 +1,5 @@
 import { Template } from 'meteor/templating';
+import { Random } from 'meteor/random';
 
 import './main.html';
 
@@ -9,8 +10,36 @@ let fogColor = '#1a9e0b';
 Template.list.onCreated(function() {
     Meteor.subscribe('nodes');
     Meteor.subscribe('tags');
+    Meteor.subscribe('gui');
+
+    //start sending data every minute
+    addMeasurement(GUI.findOne() ? GUI.findOne().waitTime : 1500)
 });
 
+addMeasurement = function(waitTime) {
+    Meteor.setTimeout(function() {
+
+        const nd = node();
+        Nodes.insert(nd, function(err, result) {
+            if(result) {
+                Nodes.update({_id : result}, {$set : {received: Date.now()}});
+            }
+        });
+
+        //10 tag events
+        for (let i = 0; i < 10; i++) {
+            const tagID = Random.id();
+            Tags.insert(tag(nd.nodeID, tagID), function(err, result) {
+                if(result) {
+                    Tags.update({_id : result}, {$set : {received: Date.now()}});
+                }
+            });
+        }
+
+        addMeasurement(GUI.findOne() ? GUI.findOne().waitTime : 1500);
+
+    }, waitTime);
+};
 
 Template.list.events({
     'click div.addNode': function() {
@@ -56,6 +85,11 @@ Template.list.events({
             });
         }
     },
+
+    'change #waitTime': function (evt) {
+        console.log(evt.target.valueAsNumber);
+        GUI.update({_id : GUI.findOne()._id}, {waitTime : evt.target.valueAsNumber});
+    }
 });
 
 Template.list.helpers({
@@ -64,7 +98,10 @@ Template.list.helpers({
         return Nodes.findOne({sent: {$exists : true}});
     },
     nodesInLog() {
-        return Nodes.find({sent: {$exists : true}}, {sort: {sent: 1}});
+        return Nodes.find({sent: {$exists : true}}, {sort: {sent: -1}, limit: 10});
+    },
+    nodeCount() {
+        return Nodes.find({sent: {$exists : true}}).count();
     },
     nodeInQueue() {
         return Nodes.findOne({sent: {$exists : false}});
@@ -83,7 +120,7 @@ Template.list.helpers({
         return Tags.findOne({sent: {$exists : true}});
     },
     tagsInLog() {
-        const tags = Tags.find({sent: {$exists : true}}, {sort: {sent: 1}}).fetch();
+        const tags = Tags.find({sent: {$exists : true}}, {sort: {sent: -1}, limit: 10}).fetch();
         sorted = [];
 
         for(let t in tags) {
@@ -96,6 +133,9 @@ Template.list.helpers({
         }
 
         return sorted;
+    },
+    tagCount() {
+        return Tags.find({sent: {$exists : true}}).count();
     },
     getNodeID() {
         return this[0].nodeID;
@@ -150,7 +190,7 @@ Template.list.helpers({
     },
     cloudAvg() {
         let sum = 0, i = 0;
-        let cloud = Nodes.find({origin: 'cloud'}).fetch();
+        let cloud = Nodes.find({}).fetch();
         for(let t in cloud) {
             if(cloud[t].received && cloud[t].sent) {
                 let dt = cloud[t].received - cloud[t].sent;
@@ -159,7 +199,7 @@ Template.list.helpers({
             }
         }
 
-        cloud = Tags.find({origin: 'cloud'}).fetch();
+        cloud = Tags.find({}).fetch();
         for(let t in cloud) {
             if(cloud[t].received && cloud[t].sent) {
                 let dt = cloud[t].received - cloud[t].sent;
@@ -189,5 +229,9 @@ Template.list.helpers({
         }
 
         return i > 0 ? sum / i : 0;
+    },
+
+    waitTime() {
+        return GUI.findOne().waitTime;
     },
 });
