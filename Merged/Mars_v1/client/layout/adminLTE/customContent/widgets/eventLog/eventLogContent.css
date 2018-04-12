@@ -23,18 +23,16 @@
   font-weight: bold;
 }
 
-#outer-table{
-  width: 100%;
-  padding-right: 10px;
-  padding-left: 10px;
+
+.badge{
+  margin-top: 1px;
+  margin-bottom: 1px;
+  margin-right: 5px;
+  margin-left: 5px;
 }
 
-#top-heading{
-  background: #5c8a8a;
-  color: white;
-}
-
-#top-heading h4{
-  padding-right: 10px;
-  padding-left: 10px;
+.item-label {
+  padding-right: 5px;
+  padding-left: 5px;
+  font-weight: bold;
 }

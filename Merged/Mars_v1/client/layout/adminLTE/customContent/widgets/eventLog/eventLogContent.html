@@ -20,29 +20,46 @@
 
                   <ul class="messageWindow">
 
-                    {{#each nodeListFull}}
-                    <table class="table table-fixed table-striped" id="outer-table">
-                        <thead id="top-heading">
-                          <td><h4>Node ID: </h4></td>
-                          <td><h4>{{nodeID}}</h4></td>
-                        </thead>
-                        <tbody>
-                          <tr data-target="{{nodeID}}">
-                            <td>Latitude: </td>
-                            <td>{{gps.lat}}</td>
-                          </tr>
-                          <tr>
-                            <td>Longitude: </td>
-                            <td>{{gps.lon}}</td>
-                          </tr>
-                          <tr>
-                            <td>Timestamp:</td>
-                            <td>{{gps.timestamp}}</td>
-                          </tr>
-                        </tbody>
+                    {{#each groupedNodes}}
+                    <div class="panel-group">
+                     <div class="panel panel-default">
+                       <div class="panel-heading">
+                         <h4 class="panel-title">
+                           <a data-toggle="collapse" href="#{{_id}}">
+                             <span class = "item-label">
+                               Node ID:
+                             </span>
+                             {{_id}}
+                           </a>
+                           <span class="badge">{{count}}</span>
+                         </h4>
 
-                      </table>
-                    {{/each}}
+                       </div>
+                       <div id={{_id}} class="panel-collapse collapse">
+                         {{#each gps}}
+                         <ul class="list-group">
+                           <li class="list-group-item">
+                             {{timestamp}}
+                           </li>
+                           <li class="list-group-item">
+                             <span class = "item-label">
+                               Latitude:
+                             </span>
+                             {{lat}}
+                           </li>
+                           <li class="list-group-item">
+                             <span class = "item-label">
+                               Longitude:
+                             </span>
+                             {{lon}}
+                           </li>
+                         </ul>
+                         {{/each}}
+                         <div class="panel-footer">Node ID:  {{_id}}</div>
+                       </div>
+                     </div>
+                   </div>
+                   {{/each}}
                   </ul>
 
                 </section>
