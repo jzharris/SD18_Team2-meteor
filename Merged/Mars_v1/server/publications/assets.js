@@ -7,3 +7,11 @@ Meteor.publish('nodes', function() {
 Meteor.publish('tags', function() {
     return Tags.find();
 });
+
+Meteor.publish('sortedNodes', function() {
+    return SortedNodes.find();
+});
+
+Meteor.publish('sortedTags', function() {
+    return SortedTags.find();
+});
