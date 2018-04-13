@@ -3,28 +3,11 @@ import { Random } from 'meteor/random';
 Template.mapContent.onCreated(function() {
     var self = this;
 
-    // Meteor.setInterval(function() {
-    //
-    //     console.log("inserting");
-    //     Nodes.insert(node());
-    //
-    //     if(Random.fraction() < 0.25) {
-    //
-    //         const nodeID = Random.id();
-    //         const tagID = Random.id();
-    //
-    //         let arr = [];
-    //         for (let i = 1; i <= 10; i++) {
-    //             arr.push(i);
-    //         }
-    //
-    //         //random number of tag events between 1 and 10
-    //         for (let i = 0; i < Random.choice(arr); i++) {
-    //             Tags.insert(tag(nodeID, tagID));
-    //         }
-    //     }
-    //
-    // }, 60000);
+/*    Meteor.setInterval(function() {
+        console.log('interval');
+
+
+    }, 60000);*/
 
 // ================================================
 // Function to run once googlemaps api is ready
@@ -79,71 +62,94 @@ Template.mapContent.onCreated(function() {
           $('#legend').append(label)
         }
         // Draw Info Box
-        map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#infobox')[0])
+        //map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#infobox')[0])
 
     // ================================================
     // Reactively update map
         self.autorun(function() {
 
-          const nodes = Nodes.find().observe({
+          const nodes = SortedNodes.find().observe({
 
             added: function(document) {
               addNode(document);
             },
 
             changed: function(newDocument, oldDocument) {
-              var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
+              var gps = newDocument.gps[0];
 
-              var pin = nodeLayer.getFeatureById(oldDocument.nodeID);
+              var latLng = new google.maps.LatLng({lat: gps.lat, lng: gps.lon});
+
+              var pin = nodeLayer.getFeatureById(oldDocument._id);
               pin.setGeometry(latLng);
+              pin.setProperty('timestamp', gps.timestamp);
               removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
 
-              var pin = nodeLayer.getFeatureById(oldDocument.nodeID);
+              var pin = nodeLayer.getFeatureById(oldDocument._id);
               if (typeof pin !== 'undefined'){
                 // Node is already plotted on map
                 // Remove exsisting marker
                 nodeLayer.remove(pin);
                 removeMapObject(txtbox);
 
-                console.log('Removed map marker for node: ' + oldDocument.nodeID);
+                console.log('Removed map marker for node: ' + oldDocument._id);
               }
             }
           });
 
-          const tags = Tags.find().observe({
+          const tags = SortedTags.find().observe({
 
             added: function(document) {
               addTag(document);
-
+              //console.log(SortedTags._collection._docs._map)
             },
 
             changed: function(newDocument, oldDocument) {
-              var latLng = new google.maps.LatLng({lat: newDocument.gps.lat, lng: newDocument.gps.lon});
+              var pos = newDocument.pos[0];
+
+              var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
 
               var pin = tagLayer.getFeatureById(oldDocument._id);
               pin.setGeometry(latLng);
-
+              pin.setProperty('timestamp', pos.timestamp);
               removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
 
               var pin = tagLayer.getFeatureById(oldDocument._id);
+              if (typeof pin !== 'undefined'){
+                // Node is already plotted on map
+                // Remove exsisting marker
+                tagLayer.remove(pin);
+                removeMapObject(txtbox);
 
-              console.log('Removed map marker for tag: ' + oldDocument.nodeID);
-              tagLayer.remove(pin);
-              removeMapObject(txtbox);
+                console.log('Removed map marker for tag: ' + oldDocument._id);
+              }
             }
-
           });
         });
     //===================================================
-    // Google Map's listeners for testing
+    // FOR DEBUGING
         google.maps.event.addListener(map.instance, 'click',
-          function (event) {});
+          function (event) {
+
+            Meteor.call('randomNodeId', function(error, result) {
+
+              var tagid = Random.id();
+
+              for (i in result){
+                //console.log(result[i]._id);
+                var newtag = tag(result[i]._id,tagid);
+                //console.log(newtag);
+                Tags.insert(newtag);
+              }
+
+            });
+            //console.log(SortedTags._collection._docs._map)
+          });
         google.maps.event.addListener(map.instance, 'rightclick', function (event) {
           // Add node to database
                 Nodes.insert({
@@ -190,16 +196,47 @@ Template.mapContent.onCreated(function() {
         });
 
         tagLayer.addListener('rightclick',
-            function (event) {
-              nodeLayer.remove(event.feature);
-            });
+          function (event) {
+            Tags.find({tagID: event.feature.getId()}).forEach(
+              function(document){
+                  Tags.remove(document._id);
+              });
+        });
+
+        tagLayer.addListener('click', function (event) {
+          Meteor.call('randomNodeId', function(error, result) {
+
+            var tagid = event.feature.getId();
+
+            for (i in result){
+              //console.log(result[i]._id);
+              var newtag = tag(result[i]._id,tagid);
+              //console.log(newtag);
+              Tags.insert(newtag);
+            }
+
+          });
+          //console.log(SortedTags._collection._docs._map)
+        });
     //===================================================
     // Google Maps listeners for displaying infoboxes
         // Nodes: Mouseover event
         nodeLayer.addListener('mouseover',
             function (event) {
               // console.log('mouseover: ' + event.feature.getId());
-              txtbox = hoverBox(event.latLng,event.feature.getProperty('text'));
+              var node = event.feature;
+              var id = node.getId();
+              var latLng = node.getGeometry().get();
+              var timestamp = node.getProperty('timestamp');
+              var elapsedtime = time_diff(timestamp);
+
+              var txt = "<b>Node ID: </b>" + "<br> " + id + "<br><br>" +
+                        "<b>GPS: </b>" + "<br> " +
+                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br> " +
+                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br> " +
+                        "<b>Last Update: </b>" + "<br> " + elapsedtime + " ago <br>";
+
+              txtbox = hoverBox(event.latLng,txt);
               txtbox.show();
             });
         // Nodes: Mouseout event
@@ -212,7 +249,19 @@ Template.mapContent.onCreated(function() {
         tagLayer.addListener('mouseover',
             function (event) {
               // console.log('mouseover: ' + event.feature.getId());
-              var txt = event.feature.getProperty('text');
+              var tag = event.feature;
+              var id = tag.getId();
+              var latLng = tag.getGeometry().get();
+              var timestamp = tag.getProperty('timestamp');
+              var elapsedtime = time_diff(timestamp);
+
+              var txt = "<b>Tag ID: </b>" + "<br> " + id + "<br><br>" +
+                        "<b>Position: </b>" + "<br> " +
+                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br> " +
+                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br> " +
+                        "<b>Last Update: </b>" + "<br> " + elapsedtime + " ago <br>";
+
+
               txtbox = hoverBox(event.latLng,txt);
               txtbox.show();
             });
@@ -227,51 +276,60 @@ Template.mapContent.onCreated(function() {
     // Map functions
 
         function addTag(tag) {
+          var pos = tag.pos[0];
+
           // Add tag marker
-          var pin = tagLayer.getFeatureById(tag.tagID);
-
-
-          var latLng = new google.maps.LatLng({lat: tag.gps.lat, lng: tag.gps.lon});
-
-          var pin_tag = new google.maps.Data.Feature({
-            geometry: new google.maps.Data.Point(latLng),
-            id: tag.tagID,
-            properties: {
-              timestamp: tag.sent,
-              info: 'test'
-            }
-          });
-
-          var tag = tagLayer.add(pin_node);
-        }
-
-        function addNode(node) {
-          // Add node marker
-          var pin = nodeLayer.getFeatureById(node.nodeID);
-          var latLng = new google.maps.LatLng({lat: node.gps.lat, lng: node.gps.lon});
-          var txt = "<b>nodeID: </b>" + "<br> " + node.nodeID + "<br><br>" +
-                    "<b>GPS: </b>" + "<br> " +
-                    "<b>Lat: </b>" + "<br> " + node.gps.lat + "<br> " +
-                    "<b>Lon: </b>" + "<br> " + node.gps.lon + "<br> " +
-                    "<b>Timestamp: </b>" + "<br> " + node.gps.timestamp + "<br>";
+          var pin = tagLayer.getFeatureById(tag._id);
+          var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
 
           if (typeof pin !== 'undefined'){
-            // Node is already plotted on map
+            // Tag is already plotted on map
             // Update map data
-            console.log('Updating map marker for node: ' + node.nodeID);
+            console.log('Updating map marker for tag: ' + tag._id);
             pin.setGeometry(latLng);
-            pin.setProperty('text',txt);
+            pin.setProperty('timestamp',pos.timestamp);
 
           } else {
             // Node is not already plotted on map
             // Plot new node marker
-            console.log('Creating new map marker for node: ' + node.nodeID);
+            console.log('Creating new map marker for tag: ' + tag._id);
+            var pin_tag = new google.maps.Data.Feature({
+              geometry: new google.maps.Data.Point(latLng),
+              id: tag._id,
+              properties: {
+                timestamp: pos.timestamp
+              }
+            });
+          }
+          // console.log(pin_tag);
+          // console.log(pin_tag.getGeometry().get().lat());
+          // console.log(pin_tag.getGeometry().get().lng());
+          return tagLayer.add(pin_tag);
+        }
+
+        function addNode(node) {
+          var gps = node.gps[0];
+
+          // Add node marker
+          var pin = nodeLayer.getFeatureById(node._id);
+          var latLng = new google.maps.LatLng({lat: gps.lat, lng: gps.lon});
+
+          if (typeof pin !== 'undefined'){
+            // Node is already plotted on map
+            // Update map data
+            console.log('Updating map marker for node: ' + node._id);
+            pin.setGeometry(latLng);
+            pin.setProperty('timestamp',gps.timestamp);
+
+          } else {
+            // Node is not already plotted on map
+            // Plot new node marker
+            console.log('Creating new map marker for node: ' + node._id);
             var pin_node = new google.maps.Data.Feature({
               geometry: new google.maps.Data.Point(latLng),
-              id: node.nodeID,
+              id: node._id,
               properties: {
-                docID: node._id,
-                text: txt
+                timestamp: gps.timestamp
               }
             });
           }
