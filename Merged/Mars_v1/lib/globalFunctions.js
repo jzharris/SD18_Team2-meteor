@@ -83,28 +83,31 @@ triangulate = function(node_sel) {
     var lat = 0;
     var lon = 0;
 
-    const nodes = Nodes.find({nodeID: {$in : node_sel}}).map(function(x) {
-      lat += x.gps.lat;
-      lon += x.gps.lon;
+    const nodes = SortedNodes.find({_id: {$in : node_sel}}).map(function(x) {
+
+      lat += x.gps[0].lat; // Add the latest value of lat
+      lon += x.gps[0].lon; // Add the latest value of lat
     });
 
     return {
         lat: lat/num,
-        lon: lon/num
+        lon: lon/num,
+        timestamp: new Date()
     };
 
 };
 
 Icon = function(name,color) {
     if (name == 'Tag'){
-      this.path = "M0,10L20,10L20,0L0,0z";
+      this.path = "M5,15L15,15L15,5L5,5z";
+      this.scale = 1;
     } else {
       this.path = "M0,20L10,0L20,20z";
+      this.scale = 0.8;
     }
     this.fillColor = color;
     this.fillOpacity = 0.8;
-    this.scale = 1;
-    this.strokeWeight = 0.5;
+    this.strokeWeight = 0.6;
 
     return {
       path: this.path,
@@ -114,4 +117,27 @@ Icon = function(name,color) {
       strokeWeight: this.strokeWeight,
       anchor: new google.maps.Point(10,5)
     }
+}
+
+time_diff = function(timestamp) {
+var day = 60*60*24;
+var hour = 60*60;
+var min = 60;
+
+now = new Date();
+var diff = (now.getTime() - timestamp.getTime())/1000;
+
+if (diff > 2*day) {
+  return Math.floor(diff/day) + ' day(s)';
+
+} else if (diff > hour) {
+  return Math.floor(diff/hour) + ' hour(s)';
+
+} else if (diff > min){
+  return Math.floor(diff/min) + ' minute(s)';
+
+} else {
+  return Math.floor(diff)  + ' second(s)';
+}
+
 }
