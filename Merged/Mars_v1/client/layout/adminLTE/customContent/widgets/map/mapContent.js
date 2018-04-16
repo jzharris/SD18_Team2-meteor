@@ -102,19 +102,23 @@ Template.mapContent.onCreated(function() {
           const tags = SortedTags.find().observe({
 
             added: function(document) {
+              console.log(document)
               addTag(document);
-              //console.log(SortedTags._collection._docs._map)
             },
 
             changed: function(newDocument, oldDocument) {
               var pos = newDocument.pos[0];
 
-              var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
-
-              var pin = tagLayer.getFeatureById(oldDocument._id);
-              pin.setGeometry(latLng);
-              pin.setProperty('timestamp', pos.timestamp);
-              removeMapObject(txtbox);
+              // if (typeof pos !== 'undefined'){
+              //   console.log(oldDocument._id);
+              //
+              //   var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
+              //
+              //   var pin = tagLayer.getFeatureById(oldDocument._id);
+              //   pin.setGeometry(latLng);
+              //   pin.setProperty('timestamp', pos.timestamp);
+              //   removeMapObject(txtbox);
+              // }
             },
 
             removed: function(oldDocument) {
@@ -150,6 +154,7 @@ Template.mapContent.onCreated(function() {
             });
             //console.log(SortedTags._collection._docs._map)
           });
+
         google.maps.event.addListener(map.instance, 'rightclick', function (event) {
           // Add node to database
                 Nodes.insert({
@@ -276,7 +281,15 @@ Template.mapContent.onCreated(function() {
     // Map functions
 
         function addTag(tag) {
-          var pos = tag.pos[0];
+          //var pos = triangulate(tag.nodeID);
+          var pos = tag.pos;
+
+          console.log('\nMongo says:\n')
+          console.log(SortedTags._collection._docs._map)
+          console.log('\n')
+          console.log('\nObserver says:\n')
+          console.log(tag)
+          console.log('\n')
 
           // Add tag marker
           var pin = tagLayer.getFeatureById(tag._id);

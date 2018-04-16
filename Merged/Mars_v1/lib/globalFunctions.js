@@ -79,21 +79,32 @@ dataPresent = function(origin) {
 triangulate = function(node_sel) {
   // Averages the locations of several nodes.
   // node_sel is an array containing the nodeID's selected for triangulation
+
     var num = node_sel.length;
     var lat = 0;
     var lon = 0;
 
-    const nodes = SortedNodes.find({_id: {$in : node_sel}}).map(function(x) {
+    SortedNodes.find({_id: {$in : node_sel}}).map(function(node) {
 
-      lat += x.gps[0].lat; // Add the latest value of lat
-      lon += x.gps[0].lon; // Add the latest value of lat
+      lat += node.gps[0].lat; // Add the latest value of lat
+      lon += node.gps[0].lon; // Add the latest value of lon
     });
 
-    return {
-        lat: lat/num,
-        lon: lon/num,
-        timestamp: new Date()
+    position = {
+      lat: lat/num,
+      lon: lon/num,
+      timestamp: new Date()
     };
+
+    //console.log(position)
+    return position;
+
+    // console.log('\n')
+    // console.log(position)
+    // console.log('\n\n')
+
+
+
 
 };
 
@@ -120,24 +131,24 @@ Icon = function(name,color) {
 }
 
 time_diff = function(timestamp) {
-var day = 60*60*24;
-var hour = 60*60;
-var min = 60;
+  var day = 60*60*24;
+  var hour = 60*60;
+  var min = 60;
 
-now = new Date();
-var diff = (now.getTime() - timestamp.getTime())/1000;
+  now = new Date();
+  var diff = (now.getTime() - timestamp.getTime())/1000;
 
-if (diff > 2*day) {
-  return Math.floor(diff/day) + ' day(s)';
+  if (diff > 2*day) {
+    return Math.floor(diff/day) + ' day(s)';
 
-} else if (diff > hour) {
-  return Math.floor(diff/hour) + ' hour(s)';
+  } else if (diff > hour) {
+    return Math.floor(diff/hour) + ' hour(s)';
 
-} else if (diff > min){
-  return Math.floor(diff/min) + ' minute(s)';
+  } else if (diff > min){
+    return Math.floor(diff/min) + ' minute(s)';
 
-} else {
-  return Math.floor(diff)  + ' second(s)';
-}
+  } else {
+    return Math.floor(diff)  + ' second(s)';
+  }
 
 }

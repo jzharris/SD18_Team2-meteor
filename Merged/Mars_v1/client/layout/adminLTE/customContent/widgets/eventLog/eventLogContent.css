@@ -31,6 +31,12 @@
   margin-left: 5px;
 }
 
+.list-group-item-timestamp{
+  background-color: #b3b3b3;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
 .item-label {
   padding-right: 5px;
   padding-left: 5px;
