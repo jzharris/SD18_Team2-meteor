@@ -107,18 +107,18 @@ Template.mapContent.onCreated(function() {
             },
 
             changed: function(newDocument, oldDocument) {
-              var pos = newDocument.pos[0];
+              var pos = newDocument.pos;
 
-              // if (typeof pos !== 'undefined'){
-              //   console.log(oldDocument._id);
-              //
-              //   var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
-              //
-              //   var pin = tagLayer.getFeatureById(oldDocument._id);
-              //   pin.setGeometry(latLng);
-              //   pin.setProperty('timestamp', pos.timestamp);
-              //   removeMapObject(txtbox);
-              // }
+              if (typeof pos !== 'undefined'){
+                //console.log(oldDocument._id);
+
+                var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
+
+                var pin = tagLayer.getFeatureById(oldDocument._id);
+                pin.setGeometry(latLng);
+                pin.setProperty('timestamp', pos.timestamp);
+                removeMapObject(txtbox);
+              }
             },
 
             removed: function(oldDocument) {
