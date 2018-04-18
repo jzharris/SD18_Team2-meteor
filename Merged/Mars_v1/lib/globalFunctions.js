@@ -76,6 +76,14 @@ dataPresent = function(origin) {
 
 };
 
+nodeArray = [];
+assignNode = function() {
+    const newID = nodeArray.length+1;
+    nodeArray.push(newID);
+
+    return newID;
+};
+
 triangulate = function(node_sel) {
   // Averages the locations of several nodes.
   // node_sel is an array containing the nodeID's selected for triangulation
@@ -168,6 +176,6 @@ interrogate = function(command) {
   } else {
     update = {command: all,timestamp: new Date()};
   }
-  Status.update({_id: 1},update,{upsert: true})
+  Status.update({_id: "1"},update,{upsert: true})
   //console.log(Status.find({}).fetch());
 }

@@ -15,3 +15,7 @@ Meteor.publish('sortedNodes', function() {
 Meteor.publish('sortedTags', function() {
     return SortedTags.find();
 });
+
+Meteor.publish('status', function() {
+    return Status.find();
+});
