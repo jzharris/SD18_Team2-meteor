@@ -20,26 +20,15 @@
 
                     <!-- Your Page Content Here -->
 
-                    <div class="row">
-                        <!-- search form -->
-                        <form class="sidebar-form">
-                            <div class="input-group">
-                                <input type="text" name="q" class="form-control" placeholder="Find a location">
-                                <span class="input-group-btn">
-                                    <button name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i></button>
-                                </span>
-                            </div>
-                        </form>
-                    </div>
+
 
                     <div class="row">
                         <div class="map-container" style="height: {{tabContentHeight}};">
                             {{> googleMap name="map" options=MapOptions}}
-
                         </div>
                     </div>
 
-                    <div id="legend"><h3>Legend</h3></div>
+
 
                 </section>
             </div>

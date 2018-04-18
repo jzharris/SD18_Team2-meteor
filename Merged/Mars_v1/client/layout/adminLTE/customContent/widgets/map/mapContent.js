@@ -1,4 +1,5 @@
 import { Random } from 'meteor/random';
+import { Session } from 'meteor/session'
 
 Template.mapContent.onCreated(function() {
     var self = this;
@@ -19,13 +20,13 @@ Template.mapContent.onCreated(function() {
             tag: {
               name: 'Tag',
               default: new Icon('Tag','LimeGreen'),
-              selected: new Icon('Tag','LightBlue'),
+              selected: new Icon('Tag','Aqua'),
               alert: new Icon('Tag','OrangeRed')
             },
             node: {
               name: 'Node',
               default: new Icon('Node','LimeGreen'),
-              selected: new Icon('Node','LightBlue'),
+              selected: new Icon('Node','Aqua'),
               alert: new Icon('Node','OrangeRed')
             }
         };
@@ -47,23 +48,13 @@ Template.mapContent.onCreated(function() {
           }
         });
 
-
         var textbox = ''
     // ================================================
     // Draw map controls
         // Draw Legend
-        map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($('#legend')[0])
-        for (var key in icons) {
-          var type = icons[key];
-          var name = type.name;
-          var icon = type.default.path;
-          var color = type.default.fillColor;
-          var label = '<div><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</div>';
-          $('#legend').append(label)
-        }
-        // Draw Info Box
-        //map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#infobox')[0])
-
+        drawlegend();
+        //Draw Interrogate All Control
+        interrogateBtn();
     // ================================================
     // Reactively update map
         self.autorun(function() {
@@ -75,13 +66,14 @@ Template.mapContent.onCreated(function() {
             },
 
             changed: function(newDocument, oldDocument) {
-              var gps = newDocument.gps[0];
+              var gps = newDocument.pos[0];
 
               var latLng = new google.maps.LatLng({lat: gps.lat, lng: gps.lon});
 
               var pin = nodeLayer.getFeatureById(oldDocument._id);
               pin.setGeometry(latLng);
               pin.setProperty('timestamp', gps.timestamp);
+              nodeLayer.revertStyle(pin);
               removeMapObject(txtbox);
             },
 
@@ -102,7 +94,7 @@ Template.mapContent.onCreated(function() {
           const tags = SortedTags.find().observe({
 
             added: function(document) {
-              console.log(document)
+              //console.log(document)
               addTag(document);
             },
 
@@ -139,7 +131,6 @@ Template.mapContent.onCreated(function() {
     // FOR DEBUGING
         google.maps.event.addListener(map.instance, 'click',
           function (event) {
-
             Meteor.call('randomNodeId', function(error, result) {
 
               var tagid = Random.id();
@@ -182,7 +173,7 @@ Template.mapContent.onCreated(function() {
                 });
             });
 
-        nodeLayer.addListener('click', function (event) {
+        nodeLayer.addListener('dblclick', function (event) {
           Nodes.insert({
               nodeID: event.feature.getId(),
               nodeVersion: '1.0.0',
@@ -250,7 +241,15 @@ Template.mapContent.onCreated(function() {
               // console.log('mouseout: ' + event.feature.getId());
               removeMapObject(txtbox);
             });
-        // Nodes: Mouseover event
+        // Nodes: Click event
+        nodeLayer.addListener('click',
+          function (event) {
+            var node = event.feature;
+
+            interrogate(event.feature.getId());
+            nodeLayer.overrideStyle(node, {icon: icons.node.selected});
+          });
+        // Tags: Mouseover event
         tagLayer.addListener('mouseover',
             function (event) {
               // console.log('mouseover: ' + event.feature.getId());
@@ -270,26 +269,24 @@ Template.mapContent.onCreated(function() {
               txtbox = hoverBox(event.latLng,txt);
               txtbox.show();
             });
-        // Nodes: Mouseout event
+        // Tags: Mouseout event
         tagLayer.addListener('mouseout',
             function (event) {
               // console.log('mouseout: ' + event.feature.getId());
               removeMapObject(txtbox);
             });
 
-    //====================================================
-    // Map functions
-
+    //============================
+    // Marker Functions
         function addTag(tag) {
           //var pos = triangulate(tag.nodeID);
           var pos = tag.pos;
-
-          console.log('\nMongo says:\n')
-          console.log(SortedTags._collection._docs._map)
-          console.log('\n')
-          console.log('\nObserver says:\n')
-          console.log(tag)
-          console.log('\n')
+          // console.log('\nMongo says:\n')
+          // console.log(SortedTags._collection._docs._map)
+          // console.log('\n')
+          // console.log('\nObserver says:\n')
+          // console.log(tag)
+          // console.log('\n')
 
           // Add tag marker
           var pin = tagLayer.getFeatureById(tag._id);
@@ -321,7 +318,7 @@ Template.mapContent.onCreated(function() {
         }
 
         function addNode(node) {
-          var gps = node.gps[0];
+          var gps = node.pos[0];
 
           // Add node marker
           var pin = nodeLayer.getFeatureById(node._id);
@@ -353,12 +350,6 @@ Template.mapContent.onCreated(function() {
           return nodeLayer.add(pin_node);
         }
 
-        function hoverBox(latLng, hovertxt){
-          var txt = new TxtOverlay(latLng, hovertxt, "hoverBox", map.instance)
-          txt.hide();
-          return txt;
-        }
-
         function removeMapObject(object) {
             // Function for removing objectss from the map
             if (typeof object !== 'undefined'){
@@ -366,6 +357,64 @@ Template.mapContent.onCreated(function() {
               object.setMap(null);
             }
         }
+
+    //============================
+    // Controls and Overlay Functions
+        function hoverBox(latLng, hovertxt){
+          var txt = new TxtOverlay(latLng, hovertxt, "hoverBox", map.instance)
+          txt.hide();
+          return txt;
+        }
+
+        function drawlegend(){
+          $('<div />',{id: "legend"}).appendTo('.map-container');
+          $('#legend').append("<h3>Legend</h3>");
+
+          var legend = $('#legend');
+          legend.title = "Map Legend";
+
+          for (var key in icons) {
+            var type = icons[key];
+            var name = type.name;
+            var icon = type.default.path;
+            var color = type.default.fillColor;
+            var label = '<span><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</span>';
+            legend.append(label);
+          }
+          name = 'Node (Queued for update)';
+          icon = icons.node.selected.path;
+          color = icons.node.selected.fillColor;
+
+          label = '<span><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</span>';
+          legend.append(label);
+          map.instance.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(legend[0]);
+        }
+
+        function interrogateBtn() {
+          $('<div />',{id: "mapBtn"}).appendTo('.map-container');
+          $('<div />',{id: "mapBtnTxt"}).appendTo('#mapBtn');
+          // Set CSS for the control border.
+          var controlUI = $('#mapBtn')[0];
+          controlUI.title = "Click to interrogate all nodes";
+
+          //Set CSS for the control interior.
+          var controlText = $('#mapBtnTxt')[0];
+          controlText.innerHTML = 'Interrogate';
+
+          // Setup the click event listeners
+          controlUI.addEventListener('click', function() {
+
+            interrogate(); // Send interrogate all command
+            nodeLayer.forEach(function(pin){
+              // Change color of all node markers to indicate they are waiting for
+              //  an update
+              nodeLayer.overrideStyle(pin,{icon: icons.node.selected});
+            });
+          });
+
+          map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#mapBtn')[0])
+        }
+
 
         function TxtOverlay(pos, txt, cls, map) {
 

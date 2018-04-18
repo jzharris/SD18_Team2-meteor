@@ -49,11 +49,9 @@ function groupNodesByID() {
           // Count number of matching docs for the group
           count: { $sum:  1 },
 
-          gps: {$push: "$gps"}
+          pos: {$push: "$gps"}
 
       }},
-      {$sort: {"gps.timestamp": -1}},
-      //{$set: {nodelist: "$"}}
       {$out: 'sortedNodes'}
     ]);
 
@@ -80,8 +78,8 @@ function groupTagsByID() {
         "tagID": 1,
         "nodeID": 1,
         "measurements": 1,
-        "lat": {$arrayElemAt: [{ $arrayElemAt: [ "$pos.gps.lat", 0 ] }, 0]},
-        "lon": {$arrayElemAt: [{ $arrayElemAt: [ "$pos.gps.lon", 0 ] }, 0]},
+        "lat": {$arrayElemAt: [{ $arrayElemAt: [ "$pos.pos.lat", 0 ] }, 0]},
+        "lon": {$arrayElemAt: [{ $arrayElemAt: [ "$pos.pos.lon", 0 ] }, 0]},
       }},
 
       { $group: {
@@ -110,38 +108,6 @@ function groupTagsByID() {
       }},
       {$out: 'sortedTags'}
     ])
-    // .forEach(function(tagGroup){
-    //
-    //   SortedTags.find({}).forEach(function(tag) {
-    //     var prevPos = tag.pos; // Previous list of positions
-    //     var node_sel = tagGroup.data.nodeID; // List of nodes that reported seeing this tag
-    //
-    //     // Check if tag already has a list of positions
-    //     if (typeof prevPos !== 'undefined'){
-    //       // Tag instance already has a position field
-    //       // Append latest position to previous position list
-    //       prevPos.push(triangulate(node_sel));
-    //       // Update current position list
-    //       tagGroup.data.pos = prevPos;
-    //
-    //     } else {
-    //       // Tag instance does not have a position field
-    //       // Create a new position list
-    //       tagGroup.data.pos.push(triangulate(node_sel));
-    //     }
-    //   });
-    //
-    //   // console.log('\nNew\n')
-    //   // console.log(tagGroup.data.pos)
-    //   // console.log('\n\n')
-    //   SortedTags.update({_id: tagGroup._id},tagGroup.data, {upsert: true});
-    // });
-
-    // groupedTags.forEach(function(tag){
-    //
-    //
-    //
-    // });
     //console.log(tagIDs);
     //console.log(tagIDs)
     //console.log(SortedTags.find());

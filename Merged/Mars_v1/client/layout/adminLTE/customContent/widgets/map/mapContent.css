@@ -5,16 +5,48 @@
 }
 
 #legend {
-font-family: Arial, sans-serif;
-background: rgba(34, 45, 50, 1);
+font-family: Roboto,Arial,sans-serif;
+background: #374850;
+border-radius: 3px;
+box-shadow: 0 2px 6px rgba(0,0,0,.3);
+cursor: pointer;
 color: #fff;
-padding: 10px;
+padding: 5px;
 margin: 10px;
-border: 0px
 }
 
 #legend h3 {
-margin-top: 0;
+  text-align: center;
+}
+
+#legend span {
+  margin: 5px;
+}
+
+#mapBtn{
+  background: #374850;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  cursor: pointer;
+  margin: 10px;
+  text-align: center;
+}
+
+#mapBtn:hover{background: #3f545e;}
+#mapBtn:active{background: #163645;}
+
+#mapBtnTxt{
+  font-family: Roboto,Arial,sans-serif;
+  color:  #fff;
+  font-size: 16px;
+  line-height: 38px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+
+#legend h3 {
+margin: 5px;
 }
 
 #legend svg {

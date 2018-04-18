@@ -85,9 +85,9 @@ triangulate = function(node_sel) {
     var lon = 0;
 
     SortedNodes.find({_id: {$in : node_sel}}).map(function(node) {
-
-      lat += node.gps[0].lat; // Add the latest value of lat
-      lon += node.gps[0].lon; // Add the latest value of lon
+      console.log(node)
+      lat += node.pos[0].lat; // Add the latest value of lat
+      lon += node.pos[0].lon; // Add the latest value of lon
     });
 
     position = {
@@ -96,16 +96,10 @@ triangulate = function(node_sel) {
       timestamp: new Date()
     };
 
-    //console.log(position)
-    return position;
-
     // console.log('\n')
     // console.log(position)
     // console.log('\n\n')
-
-
-
-
+    return position;
 };
 
 Icon = function(name,color) {
@@ -151,4 +145,29 @@ time_diff = function(timestamp) {
     return Math.floor(diff)  + ' second(s)';
   }
 
+}
+
+formatDate =  function(date) {
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var ampm = hours >= 12 ? 'pm' : 'am';
+
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  minutes = minutes < 10 ? '0'+minutes : minutes;
+
+  var strTime = hours + ':' + minutes + ' ' + ampm;
+  return date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear() + "  " + strTime;
+}
+
+interrogate = function(command) {
+  var all = 0;
+
+  if (typeof command !== 'undefined') {
+    update = {command: command,timestamp: new Date()};
+  } else {
+    update = {command: all,timestamp: new Date()};
+  }
+  Status.update({_id: 1},update,{upsert: true})
+  //console.log(Status.find({}).fetch());
 }
