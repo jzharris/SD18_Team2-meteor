@@ -11,6 +11,7 @@ Template.list.onCreated(function() {
     Meteor.subscribe('nodes');
     Meteor.subscribe('tags');
     Meteor.subscribe('gui');
+    Meteor.subscribe('status');
 
     //start sending data every minute
     addMeasurement(GUI.findOne() ? GUI.findOne().waitTime : 1500)

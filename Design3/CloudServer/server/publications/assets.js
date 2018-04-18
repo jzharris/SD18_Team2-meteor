@@ -15,3 +15,7 @@ Meteor.publish('tags', function() {
 Meteor.publish('gui', function() {
     return GUI.find();
 });
+
+Meteor.publish('status', function() {
+    return Status.find();
+});

@@ -8,9 +8,12 @@ var ARDU_ADDR		= 0x41;	// 'A' for arduino
 var RPI_CMD_PING	= 0x00;	// Ping for bootup				Payload: 0 bytes
 var RPI_CMD_SEND	= 0x11;	// Send data to RPi				Payload: N bytes
 var RPI_CMD_INTERR	= 0x22;	// Send interrogation signal through LoRa	Payload: ? bytes
+var RPI_CMD_ACK		= 0x33;	// Interrogation ack
 
 var RPI_PIN_I2C		= 8;	// RPi flag pin
 var nodeID		= 0;	// The node ID used by LoRa, assigned by server
+
+var RPI_PIN_INT		= 11;	// RPi interrogation pin
 
 var ddpclient = new DDPClient({
 	// All properties optional, defaults shown
@@ -66,11 +69,16 @@ ddpclient.connect(function(error, wasReconnect) {
 		}
 	);
 
+	ddpclient.subscribe(
+		'status',
+		[],
+		function() {}
+	)
+
 	/*
 	 * Observe a collection.
 	 */
-	/*
-	var observer = ddpclient.observe("posts");
+	var observer = ddpclient.observe("status");
 	observer.added = function(id) {
 		console.log("[ADDED] to " + observer.name + ":	" + id);
 	};
@@ -79,20 +87,45 @@ ddpclient.connect(function(error, wasReconnect) {
 		console.log("[CHANGED] old field values: ", oldFields);
 		console.log("[CHANGED] cleared fields: ", clearedFields);
 		console.log("[CHANGED] new fields: ", newFields);
+
+		if(id == '1') {
+			wire.writeBytes(RPI_CMD_INTERR, [newFields.command], function(err) {
+				console.log('interrogation command error: ', err);
+			});
+		}
 	};
 	observer.removed = function(id, oldValue) {
 		console.log("[REMOVED] in " + observer.name + ":	" + id);
 		console.log("[REMOVED] previous value: ", oldValue);
 	};
-	setTimeout(function() { observer.stop() }, 6000);
-	*/
+	//setTimeout(function() { observer.stop() }, 6000);
 
 	// set up I2C
 	wire = new i2c(ARDU_ADDR, {device: '/dev/i2c-1'}); // point to your i2c address, debug provides REPL interface
 
+	// set up Interrogation pin
+	var int_flag = new Gpio(RPI_PIN_INT, 'in', 'rising');
+	int_flag.watch(function (err, value) {
+		if (err) {
+			return;
+		}
+
+		// Arduino is telling us to interrogate!
+		wire.writeByte(RPI_CMD_ACK, function(err) {
+			if(!err) {
+				ddpclient.call(
+					'arduinoStatus',
+					[nodeID, 'interrogating this node'],
+					function (error, result) {
+						console.log(result);
+					}
+				);
+			}
+		});
+	});
+
 	// set up I2C flag
 	var i2c_flag = new Gpio(RPI_PIN_I2C, 'in', 'rising'); //use GPIO pin 4 as output
-
 	i2c_flag.watch(function (err, value) { //Watch for hardware interrupts on i2c_flag GPIO, specify callback function
 		if (err) { //if an error
 			console.error('There was an error', err); //output error message to console
@@ -106,7 +139,10 @@ ddpclient.connect(function(error, wasReconnect) {
 				if(!err) {
 					wire.readByte(function(err, res) {
 						if(!err) {
-							console.log('pong: ', res);
+							console.log('size of pong: ', res);
+							wire.read(res, function(err, res) {
+								console.log('pong: ', res);
+							});
 						}
 					});
 				}
@@ -120,7 +156,14 @@ ddpclient.connect(function(error, wasReconnect) {
 			// Arduino has something to say, request over I2C
 			wire.writeByte(RPI_CMD_SEND, function(err) {
 				if(!err) {
-					console.log('read arduino here');
+					wire.readByte(function(err, res) {
+						if(!err) {
+							console.log('size of bytes: ', res);
+							wire.read(res, function(err, res) {
+								console.log('data: ', res);
+							});
+						}
+					});
 				}
 			});
 		}
