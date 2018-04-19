@@ -53,10 +53,9 @@ Template.mapContent.onCreated(function() {
     // Draw map controls
         // Draw Legend
         drawlegend();
-        // Draw Interrogate All Control
-        interrogateBtn();
-        // Stop Button
-        stopBtn();
+
+        // Draw Interrogation Controls
+        interrogateControls();
     // ================================================
     // Reactively update map
         self.autorun(function() {
@@ -396,55 +395,45 @@ Template.mapContent.onCreated(function() {
           map.instance.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(legend[0]);
         }
 
-        function interrogateBtn() {
-          $('<div />',{id: "mapBtn",class: 'mapBtn'}).appendTo('.map-container');
-          $('<div />',{id: "mapBtnTxt",class: "mapBtnTxt"}).appendTo('#mapBtn');
-          // Set CSS for the control border.
-          var controlUI = $('#mapBtn')[0];
-          controlUI.title = "Click to interrogate all nodes";
+        function interrogateControls() {
+          // Create button container
+          $('<div />',{id: "intCtrl",class: 'mapBtnBox'}).appendTo('.map-container');
 
-          //Set CSS for the control interior.
-          var controlText = $('#mapBtnTxt')[0];
-          controlText.innerHTML = 'Interrogate';
+          // Create interrogation Button
+          $('<div />',{id: "intBtn", class: 'mapBtn'}).appendTo('#intCtrl');
+          $('<div />',{id: "intBtnTxt",class: "mapBtnTxt"}).appendTo('#intBtn');
 
-          // Setup the click event listeners
-          controlUI.addEventListener('click', function() {
-
-            interrogate(); // Send interrogate all command
-            nodeLayer.forEach(function(pin){
-              // Change color of all node markers to indicate they are waiting for
-              //  an update
-              nodeLayer.overrideStyle(pin,{icon: icons.node.selected});
-            });
-          });
-
-          map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#mapBtn')[0])
-        }
-
-        function stopBtn() {
-          $('<div />',{id: "stopBtn",class: 'mapBtn'}).appendTo('.map-container');
+          // Create stop button
+          $('<div />',{id: "stopBtn",class: 'mapBtn'}).appendTo('#intCtrl');
           $('<div />',{id: "stopBtnTxt",class: "mapBtnTxt"}).appendTo('#stopBtn');
+
           // Set CSS for the control border.
-          var controlUI = $('#stopBtn')[0];
-          controlUI.title = "Click to stop all interrogation";
+          var intBtn = $('#intCtrl')[0];
+          intBtn.title = "Click to interrogate all nodes";
 
           //Set CSS for the control interior.
-          var controlText = $('#stopBtnTxt')[0];
-          controlText.innerHTML = 'Stop';
+          var intBtnTxt = $('#intBtnTxt')[0];
+          intBtnTxt.innerHTML = 'Interrogate';
+
+          var stopBtn = $('#stopBtn')[0];
+          stopBtn.title = "Click to stop all interrogation";
+
+          //Set CSS for the control interior.
+          var stopBtnTxt = $('#stopBtnTxt')[0];
+          stopBtnTxt.innerHTML = 'Stop';
 
           // Setup the click event listeners
-          controlUI.addEventListener('click', function() {
-
-            interrogate(100); // Send interrogate all command
-            nodeLayer.forEach(function(pin){
-              // Change color of all node markers to indicate they are waiting for
-              //  an update
-              nodeLayer.revertStyle(pin);
-            });
+          intBtn.addEventListener('click', function() {
+            interrogate(); // Send interrogate all command
           });
 
-          map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#stopBtn')[0])
+          stopBtn.addEventListener('click', function() {
+            interrogate(100); // Send interrogate all command
+          });
+
+          map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#intCtrl')[0])
         }
+
 
         function TxtOverlay(pos, txt, cls, map) {
 
