@@ -32,5 +32,10 @@ Meteor.methods({
       //console.log(randomNode);
       return randomNode
 
+    },
+
+    'getStatus': function(){
+      return Status.findOne({});
     }
+
 });

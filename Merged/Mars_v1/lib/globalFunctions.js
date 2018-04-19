@@ -177,5 +177,23 @@ interrogate = function(command) {
     update = {command: all,timestamp: new Date()};
   }
   Status.update({_id: "1"},update,{upsert: true})
-  //console.log(Status.find({}).fetch());
+  console.log(Status.find({}).fetch()[0]);
+}
+
+fakenode = function(id){
+  Nodes.insert({
+      nodeID: id,
+      nodeVersion: '1.0.0',
+      nodeType: 'Tester',
+      battery: {
+          voltage: Random.fraction()*10,
+          amperage: Random.fraction()*2,
+          timestamp: new Date()
+      },
+      gps: {
+        lat: (Random.fraction()*180) - 90,
+        lon: (Random.fraction()*360) - 180,
+          timestamp: new Date()
+      }
+  });
 }
