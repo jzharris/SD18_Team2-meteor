@@ -18,6 +18,12 @@ Template.eventLogContent.helpers({
   }
 });
 
+Template.nodelist.events({
+  'click .interrogateNode': function() {
+    interrogate(this._id);
+  }
+});
+
 Template.nodelist.helpers({
   groupedNodes: function () {
       var nodedata = SortedNodes.find({}).map(function(node){
@@ -39,8 +45,18 @@ Template.nodelist.helpers({
 
 Template.taglist.helpers({
   groupedTags: function () {
+    var tagdata = SortedTags.find({}).map(function(tag){
 
-      return SortedTags.find({});
+      tag.lastupdate = time_diff(tag.pos[0].timestamp);
+
+      tag.pos.map(function(x,index) {
+        tag.pos[index].timestamp = formatDate(x.timestamp);
+      })
+
+      return tag;
+    })
+    console.log(tagdata)
+    return tagdata;
 
   }
 });

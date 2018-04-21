@@ -53,8 +53,9 @@ Template.mapContent.onCreated(function() {
     // Draw map controls
         // Draw Legend
         drawlegend();
-        //Draw Interrogate All Control
-        interrogateBtn();
+        // Draw Interrogation Controls
+        interrogateControls();
+        // Draw infobox
     // ================================================
     // Reactively update map
         self.autorun(function() {
@@ -74,7 +75,7 @@ Template.mapContent.onCreated(function() {
               pin.setGeometry(latLng);
               pin.setProperty('timestamp', gps.timestamp);
               nodeLayer.revertStyle(pin);
-              removeMapObject(txtbox);
+              //removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
@@ -99,18 +100,18 @@ Template.mapContent.onCreated(function() {
             },
 
             changed: function(newDocument, oldDocument) {
+              console.log(newDocument)
               var pos = newDocument.pos;
 
               if (typeof pos !== 'undefined'){
-                //console.log(oldDocument._id);
 
                 var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
-
-                var pin = tagLayer.getFeatureById(oldDocument._id);
+                console.log({lat: latLng.lat(), lon: latLng.lng()})
+                var pin = tagLayer.getFeatureById(newDocument._id);
                 pin.setGeometry(latLng);
                 pin.setProperty('timestamp', pos.timestamp);
-                removeMapObject(txtbox);
               }
+              //removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
@@ -129,42 +130,6 @@ Template.mapContent.onCreated(function() {
         });
     //===================================================
     // FOR DEBUGING
-        google.maps.event.addListener(map.instance, 'click',
-          function (event) {
-            Meteor.call('randomNodeId', function(error, result) {
-
-              var tagid = Random.id();
-
-              for (i in result){
-                //console.log(result[i]._id);
-                var newtag = tag(result[i]._id,tagid);
-                //console.log(newtag);
-                Tags.insert(newtag);
-              }
-
-            });
-            //console.log(SortedTags._collection._docs._map)
-          });
-
-        google.maps.event.addListener(map.instance, 'rightclick', function (event) {
-          // Add node to database
-                Nodes.insert({
-                    nodeID: Random.id(),
-                    nodeVersion: '1.0.0',
-                    nodeType: 'Tester',
-                    battery: {
-                        voltage: Random.fraction()*10,
-                        amperage: Random.fraction()*2,
-                        timestamp: new Date()
-                    },
-                    gps: {
-                        lat: event.latLng.lat(),
-                        lon: event.latLng.lng(),
-                        timestamp: new Date()
-                    }
-                });
-        });
-
         nodeLayer.addListener('rightclick',
             function (event) {
               Nodes.find({nodeID: event.feature.getId()}).forEach(
@@ -172,24 +137,6 @@ Template.mapContent.onCreated(function() {
                     Nodes.remove(document._id);
                 });
             });
-
-        nodeLayer.addListener('dblclick', function (event) {
-          Nodes.insert({
-              nodeID: event.feature.getId(),
-              nodeVersion: '1.0.0',
-              nodeType: 'Tester',
-              battery: {
-                  voltage: Random.fraction()*10,
-                  amperage: Random.fraction()*2,
-                  timestamp: new Date()
-              },
-              gps: {
-                  lat: (Random.fraction()*180) - 90,
-                  lon: (Random.fraction()*360) - 180,
-                  timestamp: new Date()
-              }
-          });
-        });
 
         tagLayer.addListener('rightclick',
           function (event) {
@@ -199,21 +146,6 @@ Template.mapContent.onCreated(function() {
               });
         });
 
-        tagLayer.addListener('click', function (event) {
-          Meteor.call('randomNodeId', function(error, result) {
-
-            var tagid = event.feature.getId();
-
-            for (i in result){
-              //console.log(result[i]._id);
-              var newtag = tag(result[i]._id,tagid);
-              //console.log(newtag);
-              Tags.insert(newtag);
-            }
-
-          });
-          //console.log(SortedTags._collection._docs._map)
-        });
     //===================================================
     // Google Maps listeners for displaying infoboxes
         // Nodes: Mouseover event
@@ -227,12 +159,13 @@ Template.mapContent.onCreated(function() {
               var elapsedtime = time_diff(timestamp);
 
               var txt = "<b>Node ID: </b>" + "<br> " + id + "<br><br>" +
-                        "<b>GPS: </b>" + "<br> " +
-                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br> " +
-                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br> " +
+                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br><br>" +
+                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br><br>" +
                         "<b>Last Update: </b>" + "<br> " + elapsedtime + " ago <br>";
+              var hovertxt = "<b>Node ID: </b>" + id;
 
               txtbox = hoverBox(event.latLng,txt);
+              //$('#infoBox')[0].innerHTML = txt;
               txtbox.show();
             });
         // Nodes: Mouseout event
@@ -240,6 +173,7 @@ Template.mapContent.onCreated(function() {
             function (event) {
               // console.log('mouseout: ' + event.feature.getId());
               removeMapObject(txtbox);
+              //$('#infoBox')[0].innerHTML = '';
             });
         // Nodes: Click event
         nodeLayer.addListener('click',
@@ -259,10 +193,10 @@ Template.mapContent.onCreated(function() {
               var timestamp = tag.getProperty('timestamp');
               var elapsedtime = time_diff(timestamp);
 
-              var txt = "<b>Tag ID: </b>" + "<br> " + id + "<br><br>" +
+              var txt = "<b>Tag ID: </b>" + id + "<br><br>" +
                         "<b>Position: </b>" + "<br> " +
-                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br> " +
-                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br> " +
+                        "<b>Lat: </b>" + latLng.lat() + "<br> " +
+                        "<b>Lon: </b>" + latLng.lng() + "<br> " +
                         "<b>Last Update: </b>" + "<br> " + elapsedtime + " ago <br>";
 
 
@@ -284,9 +218,9 @@ Template.mapContent.onCreated(function() {
           // console.log('\nMongo says:\n')
           // console.log(SortedTags._collection._docs._map)
           // console.log('\n')
-          // console.log('\nObserver says:\n')
-          // console.log(tag)
-          // console.log('\n')
+          console.log('\nTag Data:')
+          console.log(tag)
+          console.log('\n')
 
           // Add tag marker
           var pin = tagLayer.getFeatureById(tag._id);
@@ -319,6 +253,10 @@ Template.mapContent.onCreated(function() {
 
         function addNode(node) {
           var gps = node.pos[0];
+
+          console.log('\nNode Data:')
+          console.log(node)
+          console.log('\n')
 
           // Add node marker
           var pin = nodeLayer.getFeatureById(node._id);
@@ -367,11 +305,11 @@ Template.mapContent.onCreated(function() {
         }
 
         function drawlegend(){
-          $('<div />',{id: "legend"}).appendTo('.map-container');
-          $('#legend').append("<h3>Legend</h3>");
+          $('<div />',{id: "legend", class: "infoBox"}).appendTo('.map-container');
+          //$('#legend').append("<h3>Legend</h3>");
 
           var legend = $('#legend');
-          legend.title = "Map Legend";
+          legend[0].title = "Map Legend";
 
           for (var key in icons) {
             var type = icons[key];
@@ -387,34 +325,54 @@ Template.mapContent.onCreated(function() {
 
           label = '<span><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</span>';
           legend.append(label);
-          map.instance.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(legend[0]);
+          map.instance.controls[google.maps.ControlPosition.TOP_LEFT].push(legend[0]);
         }
 
-        function interrogateBtn() {
-          $('<div />',{id: "mapBtn"}).appendTo('.map-container');
-          $('<div />',{id: "mapBtnTxt"}).appendTo('#mapBtn');
+        function infobox() {
+          $('<div />',{id: "infoBox",class: 'mapTxtBox'}).appendTo('.map-container');
+
+          map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($('#infoBox')[0])
+
+        }
+
+        function interrogateControls() {
+          // Create button container
+          $('<div />',{id: "intCtrl",class: 'mapBtnBox'}).appendTo('.map-container');
+
+          // Create interrogation Button
+          $('<div />',{id: "intBtn", class: 'mapBtn'}).appendTo('#intCtrl');
+          $('<div />',{id: "intBtnTxt",class: "mapBtnTxt"}).appendTo('#intBtn');
+
+          // Create stop button
+          $('<div />',{id: "stopBtn",class: 'mapBtn'}).appendTo('#intCtrl');
+          $('<div />',{id: "stopBtnTxt",class: "mapBtnTxt"}).appendTo('#stopBtn');
+
           // Set CSS for the control border.
-          var controlUI = $('#mapBtn')[0];
-          controlUI.title = "Click to interrogate all nodes";
+          var intBtn = $('#intCtrl')[0];
+          intBtn.title = "Click to interrogate all nodes";
 
           //Set CSS for the control interior.
-          var controlText = $('#mapBtnTxt')[0];
-          controlText.innerHTML = 'Interrogate';
+          var intBtnTxt = $('#intBtnTxt')[0];
+          intBtnTxt.innerHTML = 'Interrogate';
+
+          var stopBtn = $('#stopBtn')[0];
+          stopBtn.title = "Click to stop all interrogation";
+
+          //Set CSS for the control interior.
+          var stopBtnTxt = $('#stopBtnTxt')[0];
+          stopBtnTxt.innerHTML = 'Stop';
 
           // Setup the click event listeners
-          controlUI.addEventListener('click', function() {
-
+          intBtn.addEventListener('click', function() {
             interrogate(); // Send interrogate all command
-            nodeLayer.forEach(function(pin){
-              // Change color of all node markers to indicate they are waiting for
-              //  an update
-              nodeLayer.overrideStyle(pin,{icon: icons.node.selected});
-            });
           });
 
-          map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#mapBtn')[0])
-        }
+          stopBtn.addEventListener('click', function() {
+            interrogate(100); // Send interrogate all command
+          });
 
+          map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#intCtrl')[0])
+        }
 
         function TxtOverlay(pos, txt, cls, map) {
 
@@ -525,11 +483,12 @@ Template.mapContent.helpers({
                 minZoom: 0, // 16
                 disableDefaultUI: true,
                 fullscreenControl: true,
-                styles: [{
-                    featureType: 'poi',
-                    stylers: [{visibility: 'off'}]
-                }]
-
+                styles: [
+            {
+                featureType: 'poi',
+                stylers: [{visibility: 'off'}]
+            }
+          ]
             };
         }
     }

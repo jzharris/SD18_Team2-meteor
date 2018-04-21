@@ -31,10 +31,15 @@
   margin-left: 5px;
 }
 
-.list-group-item-timestamp{
-  background-color: #f5f5f5;
-  padding-right: 5px;
-  padding-left: 5px;
+.list-group-item{
+  padding-right: 10px;
+  padding-left: 0px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+.list-group-item:hover{
+  background-color: #bbb8b8;
 }
 
 .panel-heading{
@@ -46,6 +51,13 @@
   padding-right: 5px;
   padding-left: 5px;
   font-weight: bold;
+}
+
+.item-timestamp {
+  padding-right: 5px;
+  padding-left: 5px;
+  font-weight: bold;
+  border-right: thin solid #b8b1b1;
 }
 
 .item-note {
