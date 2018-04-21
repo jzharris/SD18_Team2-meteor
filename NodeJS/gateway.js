@@ -132,7 +132,7 @@ ddpclient.connect(function(error, wasReconnect) {
 			return;
 		}
 
-		if(watchdog == 0) {
+		if(watchdog === 0) {
 			// Arduino has booted up, ping over I2C
 			console.log('Arduino has booted up, pinging over I2C');
 			wire.writeByte(RPI_CMD_PING, function(err) {
@@ -150,8 +150,6 @@ ddpclient.connect(function(error, wasReconnect) {
 				sendWatchDog();
 			});
 
-			arduino.ping = 0;
-			arduino.timeStamp = timestamp('ms');
 		} else {
 			// Arduino has something to say, request over I2C
 			wire.writeByte(RPI_CMD_SEND, function(err) {
@@ -161,6 +159,17 @@ ddpclient.connect(function(error, wasReconnect) {
 							console.log('size of bytes: ', res);
 							wire.read(res, function(err, res) {
 								console.log('data: ', res);
+                                ddpclient.call(
+                                    'nodePacket',
+                                    [res],
+                                    function (err, result) {
+                                        if(err) {
+                                            console.log('Could not call -nodePacket- server method');
+                                        } else {
+                                        	console.log(result);
+										}
+                                    }
+                                );
 							});
 						}
 					});
@@ -182,10 +191,6 @@ var sendWatchDog = function () {
 	}, 60000);
 };
 
-var arduino = {
-	ping: -1,
-	timeStamp: 0
-};
 var pingArduino = function () {
 	wire.writeByte(RPI_CMD_PING, recordPong);
 };
