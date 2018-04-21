@@ -53,9 +53,9 @@ Template.mapContent.onCreated(function() {
     // Draw map controls
         // Draw Legend
         drawlegend();
-
         // Draw Interrogation Controls
         interrogateControls();
+        // Draw infobox
     // ================================================
     // Reactively update map
         self.autorun(function() {
@@ -75,7 +75,7 @@ Template.mapContent.onCreated(function() {
               pin.setGeometry(latLng);
               pin.setProperty('timestamp', gps.timestamp);
               nodeLayer.revertStyle(pin);
-              removeMapObject(txtbox);
+              //removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
@@ -100,18 +100,18 @@ Template.mapContent.onCreated(function() {
             },
 
             changed: function(newDocument, oldDocument) {
+              console.log(newDocument)
               var pos = newDocument.pos;
 
               if (typeof pos !== 'undefined'){
-                //console.log(oldDocument._id);
 
                 var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
-
-                var pin = tagLayer.getFeatureById(oldDocument._id);
+                console.log({lat: latLng.lat(), lon: latLng.lng()})
+                var pin = tagLayer.getFeatureById(newDocument._id);
                 pin.setGeometry(latLng);
                 pin.setProperty('timestamp', pos.timestamp);
-                removeMapObject(txtbox);
               }
+              //removeMapObject(txtbox);
             },
 
             removed: function(oldDocument) {
@@ -130,42 +130,6 @@ Template.mapContent.onCreated(function() {
         });
     //===================================================
     // FOR DEBUGING
-        // google.maps.event.addListener(map.instance, 'click',
-        //   function (event) {
-        //     Meteor.call('randomNodeId', function(error, result) {
-        //
-        //       var tagid = Random.id();
-        //
-        //       for (i in result){
-        //         //console.log(result[i]._id);
-        //         var newtag = tag(result[i]._id,tagid);
-        //         //console.log(newtag);
-        //         Tags.insert(newtag);
-        //       }
-        //
-        //     });
-        //     //console.log(SortedTags._collection._docs._map)
-        //   });
-        //
-        // google.maps.event.addListener(map.instance, 'rightclick', function (event) {
-        //   // Add node to database
-        //         Nodes.insert({
-        //             nodeID: Math.floor(Math.random()*9),
-        //             nodeVersion: '1.0.0',
-        //             nodeType: 'Tester',
-        //             battery: {
-        //                 voltage: Random.fraction()*10,
-        //                 amperage: Random.fraction()*2,
-        //                 timestamp: new Date()
-        //             },
-        //             gps: {
-        //                 lat: event.latLng.lat(),
-        //                 lon: event.latLng.lng(),
-        //                 timestamp: new Date()
-        //             }
-        //         });
-        // });
-
         nodeLayer.addListener('rightclick',
             function (event) {
               Nodes.find({nodeID: event.feature.getId()}).forEach(
@@ -174,47 +138,14 @@ Template.mapContent.onCreated(function() {
                 });
             });
 
-        // nodeLayer.addListener('dblclick', function (event) {
-        //   Nodes.insert({
-        //       nodeID: event.feature.getId(),
-        //       nodeVersion: '1.0.0',
-        //       nodeType: 'Tester',
-        //       battery: {
-        //           voltage: Random.fraction()*10,
-        //           amperage: Random.fraction()*2,
-        //           timestamp: new Date()
-        //       },
-        //       gps: {
-        //           lat: (Random.fraction()*180) - 90,
-        //           lon: (Random.fraction()*360) - 180,
-        //           timestamp: new Date()
-        //       }
-        //   });
-        // });
-        //
-        // tagLayer.addListener('rightclick',
-        //   function (event) {
-        //     Tags.find({tagID: event.feature.getId()}).forEach(
-        //       function(document){
-        //           Tags.remove(document._id);
-        //       });
-        // });
-        //
-        // tagLayer.addListener('click', function (event) {
-        //   Meteor.call('randomNodeId', function(error, result) {
-        //
-        //     var tagid = event.feature.getId();
-        //
-        //     for (i in result){
-        //       //console.log(result[i]._id);
-        //       var newtag = tag(result[i]._id,tagid);
-        //       //console.log(newtag);
-        //       Tags.insert(newtag);
-        //     }
-        //
-        //   });
-        //   //console.log(SortedTags._collection._docs._map)
-        // });
+        tagLayer.addListener('rightclick',
+          function (event) {
+            Tags.find({tagID: event.feature.getId()}).forEach(
+              function(document){
+                  Tags.remove(document._id);
+              });
+        });
+
     //===================================================
     // Google Maps listeners for displaying infoboxes
         // Nodes: Mouseover event
@@ -228,12 +159,13 @@ Template.mapContent.onCreated(function() {
               var elapsedtime = time_diff(timestamp);
 
               var txt = "<b>Node ID: </b>" + "<br> " + id + "<br><br>" +
-                        "<b>GPS: </b>" + "<br> " +
-                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br> " +
-                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br> " +
+                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br><br>" +
+                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br><br>" +
                         "<b>Last Update: </b>" + "<br> " + elapsedtime + " ago <br>";
+              var hovertxt = "<b>Node ID: </b>" + id;
 
               txtbox = hoverBox(event.latLng,txt);
+              //$('#infoBox')[0].innerHTML = txt;
               txtbox.show();
             });
         // Nodes: Mouseout event
@@ -241,6 +173,7 @@ Template.mapContent.onCreated(function() {
             function (event) {
               // console.log('mouseout: ' + event.feature.getId());
               removeMapObject(txtbox);
+              //$('#infoBox')[0].innerHTML = '';
             });
         // Nodes: Click event
         nodeLayer.addListener('click',
@@ -260,10 +193,10 @@ Template.mapContent.onCreated(function() {
               var timestamp = tag.getProperty('timestamp');
               var elapsedtime = time_diff(timestamp);
 
-              var txt = "<b>Tag ID: </b>" + "<br> " + id + "<br><br>" +
+              var txt = "<b>Tag ID: </b>" + id + "<br><br>" +
                         "<b>Position: </b>" + "<br> " +
-                        "<b>Lat: </b>" + "<br> " + latLng.lat() + "<br> " +
-                        "<b>Lon: </b>" + "<br> " + latLng.lng() + "<br> " +
+                        "<b>Lat: </b>" + latLng.lat() + "<br> " +
+                        "<b>Lon: </b>" + latLng.lng() + "<br> " +
                         "<b>Last Update: </b>" + "<br> " + elapsedtime + " ago <br>";
 
 
@@ -372,7 +305,7 @@ Template.mapContent.onCreated(function() {
         }
 
         function drawlegend(){
-          $('<div />',{id: "legend"}).appendTo('.map-container');
+          $('<div />',{id: "legend", class: "infoBox"}).appendTo('.map-container');
           //$('#legend').append("<h3>Legend</h3>");
 
           var legend = $('#legend');
@@ -392,7 +325,14 @@ Template.mapContent.onCreated(function() {
 
           label = '<span><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</span>';
           legend.append(label);
-          map.instance.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(legend[0]);
+          map.instance.controls[google.maps.ControlPosition.TOP_LEFT].push(legend[0]);
+        }
+
+        function infobox() {
+          $('<div />',{id: "infoBox",class: 'mapTxtBox'}).appendTo('.map-container');
+
+          map.instance.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push($('#infoBox')[0])
+
         }
 
         function interrogateControls() {
@@ -433,7 +373,6 @@ Template.mapContent.onCreated(function() {
 
           map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#intCtrl')[0])
         }
-
 
         function TxtOverlay(pos, txt, cls, map) {
 
@@ -549,71 +488,7 @@ Template.mapContent.helpers({
                 featureType: 'poi',
                 stylers: [{visibility: 'off'}]
             }
-            // {elementType: 'geometry', stylers: [{color: '#242f3e'}]},
-            // {elementType: 'labels.text.stroke', stylers: [{color: '#242f3e'}]},
-            // {elementType: 'labels.text.fill', stylers: [{color: '#746855'}]},
-            // {
-            //   featureType: 'administrative.locality',
-            //   elementType: 'labels.text.fill',
-            //   stylers: [{color: '#d59563'}]
-            // },
-            // {
-            //   featureType: 'road',
-            //   elementType: 'geometry',
-            //   stylers: [{color: '#38414e'}]
-            // },
-            // {
-            //   featureType: 'road',
-            //   elementType: 'geometry.stroke',
-            //   stylers: [{color: '#212a37'}]
-            // },
-            // {
-            //   featureType: 'road',
-            //   elementType: 'labels.text.fill',
-            //   stylers: [{color: '#9ca5b3'}]
-            // },
-            // {
-            //   featureType: 'road.highway',
-            //   elementType: 'geometry',
-            //   stylers: [{color: '#746855'}]
-            // },
-            // {
-            //   featureType: 'road.highway',
-            //   elementType: 'geometry.stroke',
-            //   stylers: [{color: '#1f2835'}]
-            // },
-            // {
-            //   featureType: 'road.highway',
-            //   elementType: 'labels.text.fill',
-            //   stylers: [{color: '#f3d19c'}]
-            // },
-            // {
-            //   featureType: 'transit',
-            //   elementType: 'geometry',
-            //   stylers: [{color: '#2f3948'}]
-            // },
-            // {
-            //   featureType: 'transit.station',
-            //   elementType: 'labels.text.fill',
-            //   stylers: [{color: '#d59563'}]
-            // },
-            // {
-            //   featureType: 'water',
-            //   elementType: 'geometry',
-            //   stylers: [{color: '#17263c'}]
-            // },
-            // {
-            //   featureType: 'water',
-            //   elementType: 'labels.text.fill',
-            //   stylers: [{color: '#515c6d'}]
-            // },
-            // {
-            //   featureType: 'water',
-            //   elementType: 'labels.text.stroke',
-            //   stylers: [{color: '#17263c'}]
-            // }
           ]
-
             };
         }
     }
