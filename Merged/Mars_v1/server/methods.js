@@ -15,6 +15,12 @@ Meteor.methods({
     'arduinoStatus': function(nodeID, status) {
         console.log('Node'+nodeID+"'s"+' arduino status changed to '+status+'!');
     },
+    'nodePacket': function(message) {
+        console.log('Receiving: ', message);
+        let parsed = JSON.parse(message);
+        console.log('Parsed: ');
+        console.log(parsed);
+    },
 
     'downloadCSV': function(origin) {
         const collection = collectAssets(origin);
@@ -28,7 +34,7 @@ Meteor.methods({
       randomNode = SortedNodes.aggregate([
         {$sample: {size: 3}},
         {$project: {_id: 1}}
-      ])
+      ]);
       //console.log(randomNode);
       return randomNode
 

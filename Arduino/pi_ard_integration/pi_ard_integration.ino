@@ -28,7 +28,8 @@
 #define RPI_CMD_PING      0x00  // Ping for bootup                          Payload: 0 bytes
 #define RPI_CMD_SEND      0x11  // Send data to RPi                         Payload: N bytes
 #define RPI_CMD_INTERR    0x22  // Send interrogation signal through LoRa   Payload: ? bytes
-#define RPI_CMD_ACK       0x33  // Send interrogation ack
+#define RPI_CMD_ACK       0x33  // Send interrogation ack                   Payload: 0 bytes
+#define RPI_CMD_RECEIVE   0x44  // Receive data from RPi                    Payload: N bytes
 
 // define GPIO pin for RPi comms flag
 #define RPI_PIN_I2C       8     // RPi i2c flag pin
@@ -51,7 +52,7 @@ int ping_count = 0;             // Flag for pinging
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 // Define Node Address
-#define NodeAddr 0
+#define NodeAddr 1
 
 int16_t packetnum = 0;  // packet counter, we increment per xmission
 int i, node_read,count;
@@ -134,6 +135,7 @@ void setup_Tx(){
 
 }
 
+String rec;
 void receiveData(int numBytes) {
   if(Wire.available() > 0) {
     cmd = Wire.read();
@@ -145,6 +147,30 @@ void receiveData(int numBytes) {
     case RPI_CMD_ACK:
       Serial.println("interrogation signal has been delivered to RPi");
       digitalWrite(RPI_PIN_INT, LOW);
+      break;
+    case RPI_CMD_RECEIVE:
+      Serial.println("I2C receive request from RPi, receiving data");
+
+      char receive_string[80] = "";
+      while(Wire.available()){                   //Read in node address to interrogate
+        char c = Wire.read();
+        Serial.print(c);
+        Serial.println("");
+        strcat(receive_string, c);
+      }
+      
+      Serial.println("---");
+      Serial.print("Transmitting message: ");
+      Serial.println(rec);
+      Serial.println("---");
+      
+      strcat(receive_string,"_");                       //Parse between node to and from address
+      itoa(NodeAddr,transmit_string + i + 1,10);                 
+      strcat(receive_string,"_Transmit");
+      Serial.print("Message to be sent:");
+      Serial.println(receive_string); delay(100);
+      Serial.println("Currently Transmitting"); delay(100);
+      rf95.send((uint8_t *)receive_string, sizeof(receive_string));
       break;
     default:
       break;
@@ -159,7 +185,7 @@ void sendData() {
                                             // Ping from RPi, initiated by RPi
     Wire.write(1);
     Wire.write(ping_count);                 // Send self address back as pong
-    
+     
     digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
     break;
   case RPI_CMD_SEND:
@@ -172,14 +198,15 @@ void sendData() {
     break;
   default:
     Serial.println("I2C command from RPi not recognized...\n");
+    Serial.println(cmd);
   }
 }
 
 void Rx(){
-  if (rf95.waitAvailableTimeout(1000))
+  if (rf95.available())
   {
     if (rf95.recv(buf, &len))  // Should be a reply message for us now
-    {
+    { 
       Serial.print("Got reply: ");
       Serial.println((char*)buf);
       strcpy(transmitted_data,buf);
@@ -187,12 +214,13 @@ void Rx(){
       char* FromAddr_str =strtok(0,"_");
       int ToAddr = atoi(strtok(buf, "_"));
       int FromAddr = atoi(strtok(0,"_"));
+      delay(30);
       
-      if(ToAddr == NodeAddr){
+      if(ToAddr == NodeAddr || ToAddr == 0){
         Serial.println("Received Response Correctly");
         Serial.print("Message was sent by Node ");
         Serial.println(FromAddr);
-        Serial.print("Message was intended for Node ");
+        Serial.print("Message was intended for me: ");
         Serial.println(ToAddr);
 
         // Send interrogation signal to RPi
@@ -200,6 +228,7 @@ void Rx(){
       }
       else {
         Serial.println("This message wasn't meant for me");
+        digitalWrite(RPI_PIN_INT, HIGH);
       }
     }
     else
@@ -215,13 +244,13 @@ void Interrogate(){
   // Send a message to rf95_server
   i = 0;
   char transmit_string[80] = "";               //Transmission string to nodes
-  delay(10);                                   //Need for Serial.available timing
+//  delay(10);                                   //Need for Serial.available timing
   
   while(Wire.available()){                   //Read in node address to interrogate
     node_read = Wire.read();
     Serial.print("node_read: ");
     Serial.println(node_read);
-    if(node_read == 0){
+    if(node_read == 100){
       Serial.println("Got stop command");
       strcat(transmit_string,"s"); 
     }
@@ -232,21 +261,19 @@ void Interrogate(){
   }
 
   if (count > 3){
-    delay(1500);
+    delay(1000);
     count = 0;
-  }
-    strcat(transmit_string,"_");                       //Parse between node to and from address
-    itoa(NodeAddr,transmit_string + i + 1,10);                 
-    strcat(transmit_string,"_Transmit");
-    Serial.print("Message to be sent:");
-    Serial.println(transmit_string);
+  } else {
     delay(10);
-//    Serial.println("Currently Transmitting"); delay(10);
-//    rf95.send((uint8_t *)transmit_string, 20);
-//    
-//    Serial.println("Waiting for packet to complete..."); delay(10);
-//    rf95.waitPacketSent();
+  }
+  strcat(transmit_string,"_");                       //Parse between node to and from address
+  itoa(NodeAddr,transmit_string + i + 1,10);                 
+  strcat(transmit_string,"_Transmit");
+  Serial.print("Message to be sent:");
+  Serial.println(transmit_string); delay(100);
+  Serial.println("Currently Transmitting"); delay(100);
+  rf95.send((uint8_t *)transmit_string, sizeof(transmit_string));
+
     count++;
   // Now wait for a reply
 }
-
