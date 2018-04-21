@@ -143,6 +143,7 @@ void setup_Tx(){
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
+String rec;
 void receiveData(int numBytes) {
   c = 0;
   cmd = Wire.read();
@@ -233,6 +234,7 @@ void Rx(){
       }
       else {
         Serial.println("This message wasn't meant for me");
+        digitalWrite(RPI_PIN_INT, HIGH);
       }
     }
     else
@@ -247,7 +249,6 @@ void Rx(){
 void Interrogate(){
   // Send a message to rf95_server
   i = 0;
-//  delay(10);                                   //Need for Serial.available timing
   
   while(Wire.available()){                   //Read in node address to interrogate
     node_read = Wire.read();
@@ -272,8 +273,6 @@ void Interrogate(){
   strcat(transmit_string,"_");                       //Parse between node to and from address
   itoa(NodeAddr,transmit_string + i + 1,10);                 
   strcat(transmit_string,"_Transmit");
-//  Serial.print("Message to be sent:");
-//  Serial.println(transmit_string); delay(100);
   Serial.println("Currently Transmitting"); delay(100);
   rf95.send((uint8_t *)transmit_string, sizeof(transmit_string));
 
