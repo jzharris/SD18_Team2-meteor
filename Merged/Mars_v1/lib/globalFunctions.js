@@ -158,17 +158,21 @@ time_diff = function(timestamp) {
 formatDate =  function(date) {
   var hours = date.getHours();
   var minutes = date.getMinutes();
+  var seconds = date.getSeconds();
   var ampm = hours >= 12 ? 'pm' : 'am';
+
 
   hours = hours % 12;
   hours = hours ? hours : 12; // the hour '0' should be '12'
   minutes = minutes < 10 ? '0'+minutes : minutes;
+  seconds = seconds < 10 ? '0'+seconds : seconds;
 
-  var strTime = hours + ':' + minutes + ' ' + ampm;
+  var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
   return date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear() + "  " + strTime;
 }
 
 interrogate = function(command) {
+  console.log('interrogating: ', command);
   var all = 0;
 
   if (typeof command !== 'undefined') {
@@ -195,5 +199,30 @@ fakenode = function(id){
         lon: (Random.fraction()*360) - 180,
           timestamp: new Date()
       }
+  });
+}
+
+faketag = function(id){
+  Meteor.call('randomNodeId', function(error, result) {
+
+    var tagid = id;
+
+    for (i in result){
+      //console.log(result[i]._id);
+      var newtag = tag(result[i]._id,tagid);
+      //console.log(newtag);
+      Tags.insert(newtag);
+    }
+
+  });
+
+}
+
+clearall = function(){
+  Nodes.find({}).forEach(function(x){
+    Nodes.remove(x._id);
+  });
+  Tags.find({}).forEach(function(x){
+    Tags.remove(x._id);
   });
 }

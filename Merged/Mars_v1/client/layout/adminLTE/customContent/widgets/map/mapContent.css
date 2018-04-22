@@ -11,8 +11,7 @@ border-radius: 3px;
 box-shadow: 0 2px 6px rgba(0,0,0,.3);
 cursor: pointer;
 color: #fff;
-padding: 5px;
-margin: 10px;
+padding: 2px;
 }
 
 #legend h3 {
@@ -37,8 +36,19 @@ margin: 10px;
   display: inline-block;
   border-radius: 3px;
   box-shadow: 0 2px 6px rgba(0,0,0,.3);
-  margin: 3px;
+  margin: 0px;
   text-align: center;
+}
+
+.mapTxtBox {
+  background: rgb(255, 255, 255, 0.5);
+  font-family: Roboto,Arial,sans-serif;
+  display: inline-block;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  margin: 0px;
+  padding: 5px;
+  text-align: left;
 }
 
 .mapBtn{
@@ -72,20 +82,27 @@ vertical-align: middle;
 }
 
 .hoverBox {
-  font-family: Arial, sans-serif;
-  font-size: 15px;
+  font-family: Roboto,Arial,sans-serif;
+  border-radius: 3px;
   background: rgba(34, 45, 50, 0.6);
   color: #fff;
   padding: 5px;
-  margin: 5px;
-  border: 0px;
   position: absolute;
 }
 
 #hoverBox h3 {
-  font-family: Arial, sans-serif;
+  font-family: Roboto,Arial,sans-serif;
   font-weight: bold;
-  font-size: 18px;
-  padding: opx;
+  padding: 0px;
   margin-top: 0px;
+}
+
+.infoBox {
+  background: rgb(255, 255, 255, 0.5);
+  font-family: Roboto,Arial,sans-serif;
+  display: inline-block;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  margin: 0px;
+  text-align: center;
 }
