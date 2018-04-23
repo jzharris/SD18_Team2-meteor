@@ -37,29 +37,37 @@
   <div class="panel-group">
    <div class="panel panel-default">
      <div class="panel-heading">
+       
+      <div class = "container">
+        <div class="row">
+          <div class="col">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" href="#node{{_id}}">
+                <div class = "item-title">
+                  <span class="badge">{{count}}</span>
+                  <span class = "item-label">
+                    Node ID:
+                  </span>
+                  {{_id}}
+                </div>
+                <div class = "item-note">
+                  <small>Last Update: {{lastupdate}} ago</small>
+                </div>
+              </a>
+            </h4>
+          </div>
+          <div id = "intNode" class='col'>
+            <span class="btn btn-sm btn-primary interrogateNode">
+                Interrogate
+            </span>
 
-       <div class="col-8">
-         <h4 class="panel-title">
-           <a data-toggle="collapse" href="#node{{_id}}">
-             <div class = "item-title">
-               <span class="badge">{{count}}</span>
-               <span class = "item-label">
-                 Node ID:
-               </span>
-               {{_id}}
-             </div>
-             <div class = "item-note">
-               <small>Last Update: {{lastupdate}} ago</small>
-             </div>
-           </a>
-         </h4>
-       </div>
-       <div class='col-4'>
-         <span class="btn btn-sm btn-primary interrogateNode">
-             Interrogate
-         </span>
+          </div>
+        </div>
 
-       </div>
+
+  </div>
+
+
 
 
      </div>

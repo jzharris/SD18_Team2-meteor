@@ -29,12 +29,16 @@ Meteor.methods({
         if(json['packet']) {
             var packet = json['packet'];
             if(packet['NodeID'] && packet['Location'] && packet['TimeStamp']) {
+                var t = new Date();
+                t.setHours(0,0,0,0);
+                t.setSeconds(t.getSeconds() + parseInt(packet['TimeStamp']));
+
                 var nodeSubmission = {
                     nodeID: packet['NodeID'],
                     gps: {
                         lat: packet['Location']['la'],
                         lon: packet['Location']['lo'],
-                        timestamp: new Date() + parseInt(packet['TimeStamp'])
+                        timestamp: t
                     }
                 };
                 Nodes.insert(nodeSubmission);

@@ -95,7 +95,7 @@ Template.mapContent.onCreated(function() {
             },
 
             removed: function(oldDocument) {
-
+              console.log(txtbox)
               var pin = nodeLayer.getFeatureById(oldDocument._id);
               if (typeof pin !== 'undefined'){
                 // Node is already plotted on map

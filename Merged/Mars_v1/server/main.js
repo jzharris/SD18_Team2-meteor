@@ -34,7 +34,6 @@ Meteor.startup(() => {
       }
     });
 
-
 });
 // ================================================
 // Database filtering functions

@@ -23,6 +23,10 @@
   font-weight: bold;
 }
 
+#intNode {
+  float: right
+
+}
 
 .badge{
   margin-top: 1px;

@@ -133,9 +133,6 @@ Icon = function(name,color) {
 }
 
 time_diff = function(timestamp) {
-  console.log(timestamp)
-  var timestamp = Date.parse(timestamp)
-  console.log(timestamp)
   var day = 60*60*24;
   var hour = 60*60;
   var min = 60;
@@ -228,4 +225,12 @@ clearall = function(){
   Tags.find({}).forEach(function(x){
     Tags.remove(x._id);
   });
+
+}
+
+secondsToTime = function(sec){
+  var t = new Date();
+  t.setHours(0,0,0,0);
+  t.setSeconds(t.getSeconds() + sec);
+  return t
 }
