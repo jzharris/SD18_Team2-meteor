@@ -183,6 +183,7 @@ void receiveData(int numBytes) {
   }
 }
 
+int message_size = 0;
 void sendData() {
   // parse cmd:
   switch (cmd) {
@@ -200,7 +201,12 @@ void sendData() {
       Wire.write(1);
       z++;
     } else if(z < 251+50) {
-      Wire.write(transmit_string[z++ - 50]);  // Send-data request from Pi, can be initiated by Arduino
+      if(message_size != 0) {
+        Wire.write(message_size);
+        message_size = 0;
+      } else {
+        Wire.write(transmit_string[z++ - 50]);  // Send-data request from Pi, can be initiated by Arduino
+      }
     } else {
       Wire.write(0);
     }
@@ -230,8 +236,8 @@ void Rx(){
       Serial.print("Got reply: ");
       Serial.println((char*)buf);
       strcpy(transmit_string,buf);
-      char* ToAddr_str = strtok(buf, "_");
-      char* FromAddr_str =strtok(0,"_");
+      //char* ToAddr_str = strtok(buf, "_");
+      //char* FromAddr_str =strtok(0,"_");
       char ToAddr = atoi(strtok(buf, "_"));
       char FromAddr = atoi(strtok(0,"_"));
       delay(30);

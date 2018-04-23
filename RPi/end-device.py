@@ -586,14 +586,6 @@ class GPS:
 			mylon="NaN"
 		return mytime, {'la': mylat, 'lo': mylon}
 
-#---------------------------------------------------------------------------
-# Interrupts
-def Enable_Interrogate():
-	global INT_ENABLE 		# Declare reference flag
-	INT_ENABLE = 1 			# Set flag high to trigger interrogation
-
-#---------------------------------------------------------------------------
-
 
 
 nodeID 				= 1
@@ -610,9 +602,25 @@ RPI_PIN_I2C			= 8 	# RPi flag pin
 RPI_PIN_INT			= 11 	# RPi interrogation pin
 INT_ENABLE 			= 0 	# Enable FLG for interrogation pin
 
+myGPS = None
+blue = None
+myI2c = None
+
+#---------------------------------------------------------------------------
+# Interrupts
+def Enable_Interrogate(channel):
+	print 'event!'
+	tags = blue.receive_tags(RPI_PIN_INT)
+	gpstimestamp, gpslocation = myGPS.out_put_time_and_pos()
+	export_json_str(gpstimestamp, gpslocation, tags)
+	myI2c.send_message(export_json_str(gpstimestamp, gpslocation, tags))
+
+
+#---------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
-	myI2c = MyI2C();
+	myI2c = MyI2C()
 
 	# Configure GPIO Pins
 	GPIO.setmode(GPIO.BOARD) 	# Use Physical Pin numbers for GPIO Channel ref (I.E use 40 for GPIO21)
@@ -622,7 +630,7 @@ if __name__ == "__main__":
     #GPIO.setup(messageInterruptPIN, GPIO.IN)
 
     # Watch for interrogate signal from arduino (software interrupt)
-    GPIO.add_event_detect(RPI_PIN_INT, GPIO.RISING,  callback = Enable_Interrogate)
+        GPIO.add_event_detect(RPI_PIN_INT, GPIO.RISING, callback = Enable_Interrogate)
 
     # Enable GPS and bluetooth instances
 	myGPS = GPS()
@@ -630,11 +638,11 @@ if __name__ == "__main__":
 	#counter=1000
 	#while(counter!=0):
 	while(1):
-		if(INT_ENABLE):	#Send interrogation signal:
-			tags=blue.send_interrogation(RPI_PIN_INT)
-			INT_ENABLE = 0
-		else:
-			tags=blue.receive_tags()
+		# if(INT_ENABLE):	#Send interrogation signal:
+		# tags=blue.send_interrogation(RPI_PIN_INT)
+		# 	INT_ENABLE = 0
+		# else:
+		tags=blue.receive_tags()
 		gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
 		print export_json_str(gpstimestamp,gpslocation,tags)
 		myI2c.send_message(export_json_str(gpstimestamp,gpslocation,tags))
