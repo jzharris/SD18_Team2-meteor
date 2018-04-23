@@ -27,10 +27,10 @@ class Bluetoothctl:
 		self.child.send(command + "\n")
 		time.sleep(pause)
 		start_failed = self.child.expect(["bluetooth", pexpect.EOF])
-	
+
 		if start_failed:
 			raise BluetoothctlError("Bluetoothctl failed after running " + command)
-	
+
 		return self.child.before.split("\r\n")
 
 	def start_scan(self):
@@ -183,14 +183,14 @@ class My_blueTooth():
 		for i in range(0, offTime+200):
 			time.sleep(.001)
 		self.devices=self.bl.get_discoverable_devices()
-  
+
 	def blue_tooth_clear(self):
 		i=0
 		while i<len(self.devices):
 			name = self.devices[i]['name']
 			self.bl.remove(self.devices[i]['mac_address'])
 			i=i+1
-			
+
 	def blue_tooth_parse(self):
 		i=0
 		bluetooth_string=''
@@ -277,7 +277,7 @@ class MyI2C:
 		print new_message.__len__()
 	 	grouped = list(grouper(new_message, 31, 1))
 	 	print grouped
-	 	
+
 	 	for i in range(grouped.__len__()):
                         print list(grouped[i])
                         self.bus.write_i2c_block_data(ARDU_ADDR, 0x44, list(grouped[i]))
@@ -295,7 +295,7 @@ class MyI2C:
 # 1) For connections with the TTL->Serial cable, use the following pinout:
 #       (White,green,black,red) => (TX,RX,GND,VIN)
 #    For connections to the Pi3 or Pi zero UART, use the following pinout: (Pin 1 is next to micro sd card)
-#       PI UART TX/RX => Pins 8 / 10 
+#       PI UART TX/RX => Pins 8 / 10
 #       PI GND/5V     => Pins 6 / 4
 #    Combined pins should make a ribbon
 # 2) Compute PMTK Checksums by applying Xor to str in $<str>* using the following resource
@@ -310,7 +310,7 @@ class MyI2C:
 
 
 class GPS:
-	# Opens a serial connection with a USB connected adafruit 66 channel GPS, manages communications and NMEA 
+	# Opens a serial connection with a USB connected adafruit 66 channel GPS, manages communications and NMEA
 	# sentence interpretation, and conversion of Lat/Lon readings into local distances with respect to the first
 	# successful reading. The following methods are implimented in this class:
 	#
@@ -335,7 +335,7 @@ class GPS:
 	#                               Distance Northward  : GPS.dy
 	#                               Distance Upward     : GPS.dz
 	#
-	# Running this file as a main() will write current readings to the screen as well as an Output file in the 
+	# Running this file as a main() will write current readings to the screen as well as an Output file in the
 	# open directory called GPS_Output_File.txt, tab delimited with easy input to MATLAB via readtable()
 	#-------------------------------------------------------------------------------------------------------------
 
@@ -350,14 +350,14 @@ class GPS:
 		MEAS_1_sec      = "$PMTK300,1000,0,0,0,0*1C\r\n"    # Measure once a second
 		MEAS_200_msec   = "$PMTK300,200,0,0,0,0*2F\r\n"     # Meaure 5 times a second
 		MEAS_100_msec   = "$PMTK300,100,0,0,0,0*2C\r\n"     # Meaure 10 times a second
-		
+
 		# Set the Baud Rate of the GPS, wait 0.5s after command to apply
 		BAUD_115200     = "$PMTK251,115200*1F\r\n"          # Set Baud Rate at 115200
 		BAUD_57600      = "$PMTK251,57600*2C\r\n"           # Set Baud Rate at 57600
 		BAUD_38400      = "$PMTK251,38400*27\r\n"           # Set Baud Rate at 38400
 		BAUD_19200      = "$PMTK251,19200*22\r\n"           # Set Baud Rate at 19200
 		BAUD_9600       = "$PMTK251,9600*17\r\n"            # Set 9600 Baud Rate
-		
+
 		# Commands for which NMEA Sentences are sent (support for GPGGA only at the moment)
 		GPRMC_ONLY      = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n" # Send only the GPRMC Sentence
 		GPGGA_ONLY      = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n" # Send only the GPGGA Sentence
@@ -443,7 +443,7 @@ class GPS:
 
 		# Wait to view output
 		time.sleep(0.5)
-		
+
 		# Set initial Values
 		self.Init_Reading = 0                   # Flag indicating good reading found
 	#-------------------------------------------------------------------------------------------------------------
@@ -501,8 +501,8 @@ class GPS:
 				N_msg += 1
 			elif(N_msg != 0):                               # No reading in cache, but reading stored
 				break
-		# print("{0:d} strings discarded".format(N_msg-1))  # DEBUG: Count message discard rate          
-		
+		# print("{0:d} strings discarded".format(N_msg-1))  # DEBUG: Count message discard rate
+
 		NMEA1_array = self.NMEA1.split(",")
 
 		# Interpret NMEA sentence by type
@@ -520,7 +520,7 @@ class GPS:
 				self.Lon_min  = float(NMEA1_array[4][-7:])  # Longitude (minutes)
 				self.Lon_hem  = NMEA1_array[5]              # E,W, orientation of longitude reading
 				self.sats     = int(NMEA1_array[7])         # Number of connected sats
-				self.Horiz_dil= float(NMEA1_array[8])       # Horizontal dilution 
+				self.Horiz_dil= float(NMEA1_array[8])       # Horizontal dilution
 				self.alt      = float(NMEA1_array[9])       # Current altitude [m]
 				# self.D_updt   = int(NMEA1_array[13])        # time since last differential update
 
@@ -556,12 +556,12 @@ class GPS:
 				self.dx = D_Lon*self.Km_Lon*1000;                       # Map positive x to east of prime meridian
 				self.dy = D_Lat*self.Km_Lat*1000;                       # Map positive y to north of equator
 				self.dz = self.alt - self.alt_0;                        # Map positive z to altitude
-				
+
 		else:
 			print "Invalid (Or unsupported) NMEA Sequence!"
 
 		self.read_time = time.time() - t_0
-		
+
 		#-------------------------------------------------------------------------------------------------------------
 
 	def out_put_time_and_pos(self):
@@ -582,7 +582,7 @@ class GPS:
 
 		else:
 			print "\tInvalid Values (no fix)"
-			   
+
 			# Print to file
 			mylat="NaN\tNaN\tNaN\t"
 			mylon="NaN\tNaN\tNaN\t"
@@ -610,17 +610,19 @@ if __name__ == "__main__":
 	#GPIO.setup(9, GPIO.IN)
     #GPIO.setup(messageInterruptPIN, GPIO.IN)
 	myGPS = GPS()
-	blue  =My_blueTooth()
-	counter=1
-	while(counter!=0):
+	blue  = My_blueTooth()
+	#counter=1000
+	#while(counter!=0):
+	while(1):
 		if(0):#intergation):
 			tags=blue.send_intergation()
 		else:
 			tags=blue.receive_tags()
-		gpstimestamp,gpslocation=myGPS.out_put_time_and_pos()
+		gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
 		print export_json_str(gpstimestamp,gpslocation,tags)
 		myI2c.send_message(export_json_str(gpstimestamp,gpslocation,tags))
-		counter=counter -1
+		time.sleep(60) 
+		#counter=counter -1
 	#change_name("testhi")
 	#list=blue_scan_me()
 	#print list
@@ -709,7 +711,7 @@ if __name__ == "__main__":
 				# Print to screen
 				print("\ttime [s]   := {0:<10.3f} s".format(myGPS.time_s))
 				print "\tInvalid Values (no fix)"
-				
+
 				# Print to file
 				F.write("{0:d}\t".format(myGPS.fix))
 				F.write("{0:<10.3f}\t".format(myGPS.time_s))
