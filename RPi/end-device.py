@@ -211,7 +211,7 @@ class My_blueTooth():
 					catagory=bluetooth_list[0]
 					tagid=bluetooth_list[1]
 					sensordata=bluetooth_list[2:]
-					tag_list.append({'RSSI':myrssi,'catagory':catagory,'ID':tagid,'sens':sensordata})
+					tag_list.append({'R':myrssi,'c':catagory,'ID':tagid,'s':sensordata})
 			i=i+1
 		return tag_list
 
@@ -577,18 +577,14 @@ class GPS:
 				mylon=-(self.Lon_deg+self.Lon_min/60)#),myGPS.Lon_hem]#"{0:<4d}deg {1:<7.4f}min {2}".format(myGPS.Lon_deg,myGPS.Lon_min,myGPS.Lon_hem)
 			else:
 				mylon=self.Lon_deg+self.Lon_min/60
-			myalt=myGPS.alt#"{0:<7.2f}".format(myGPS.alt)
-			mysats="{0:d}".format(myGPS.sats)
 
 		else:
 			print "\tInvalid Values (no fix)"
 
 			# Print to file
-			mylat="NaN\tNaN\tNaN\t"
-			mylon="NaN\tNaN\tNaN\t"
-			myalt="NaN\t"
-			mysats="NaN\t"
-		return mytime, {'fix':myfix, 'lat': mylat, 'lon': mylon, 'alt': myalt, 'sats':mysats}
+			mylat="NaN"
+			mylon="NaN"
+		return mytime, {'la': mylat, 'lo': mylon}
 
 nodeID= 1
 tostore = {}
