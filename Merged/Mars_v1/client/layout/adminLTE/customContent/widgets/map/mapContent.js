@@ -64,6 +64,22 @@ Template.mapContent.onCreated(function() {
 
             added: function(document) {
               addNode(document);
+
+              var command = Status.find({}).fetch()[0].command;
+              if (command == 0){
+                nodeLayer.forEach(function(pin){
+                  nodeLayer.overrideStyle(pin, {icon: icons.node.selected});
+                });
+
+              } else if (command == 100){
+                nodeLayer.forEach(function(pin){
+                  nodeLayer.revertStyle();
+                });
+
+              } else {
+                var pin = nodeLayer.getFeatureById(command)
+                nodeLayer.overrideStyle(pin, {icon: icons.node.selected});
+              }
             },
 
             changed: function(newDocument, oldDocument) {
@@ -125,8 +141,8 @@ Template.mapContent.onCreated(function() {
 
                 console.log('Removed map marker for tag: ' + oldDocument._id);
               }
-            }
-          });
+            }});
+
         });
     //===================================================
     // FOR DEBUGING
@@ -179,9 +195,7 @@ Template.mapContent.onCreated(function() {
         nodeLayer.addListener('click',
           function (event) {
             var node = event.feature;
-
             interrogate(event.feature.getId());
-            nodeLayer.overrideStyle(node, {icon: icons.node.selected});
           });
         // Tags: Mouseover event
         tagLayer.addListener('mouseover',
@@ -348,7 +362,7 @@ Template.mapContent.onCreated(function() {
           $('<div />',{id: "stopBtnTxt",class: "mapBtnTxt"}).appendTo('#stopBtn');
 
           // Set CSS for the control border.
-          var intBtn = $('#intCtrl')[0];
+          var intBtn = $('#intBtn')[0];
           intBtn.title = "Click to interrogate all nodes";
 
           //Set CSS for the control interior.
@@ -368,7 +382,7 @@ Template.mapContent.onCreated(function() {
           });
 
           stopBtn.addEventListener('click', function() {
-            interrogate(100); // Send interrogate all command
+            interrogate(100); // Send stop interrogation command
           });
 
           map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#intCtrl')[0])

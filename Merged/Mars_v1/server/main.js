@@ -50,10 +50,21 @@ function groupNodesByID() {
           count: { $sum:  1 },
 
           pos: {$push: "$gps"}
+      }},
 
+      {$project: {
+        "count": 1,
+        "pos": 1,
+        "lastupdate": {$arrayElemAt: [{ $map: {
+            input: "$pos",
+            as: "p",
+            in: "$$p.timestamp"
+            }
+         }, 0]}
       }},
       {$out: 'sortedNodes'}
     ]);
+
 
     //console.log(SortedNodes.find())
     // creates a document for each nodes
@@ -101,16 +112,17 @@ function groupTagsByID() {
       {$project: {
         "tagID": 1,
         "nodeID": 1,
+        "count": 1,
         "measurements": 1,
         "pos.lat": "$lat",
         "pos.lon": "$lon",
-        "pos.timestamp": new Date()
+        "pos.timestamp": new Date(),
+        "lastupdate": new Date()
       }},
+
       {$out: 'sortedTags'}
     ])
-    //console.log(tagIDs);
-    //console.log(tagIDs)
-    //console.log(SortedTags.find());
+
     // creates a document for each tag
     // the documents include the following fields
     // _id: Group criteria, i.e tagID
