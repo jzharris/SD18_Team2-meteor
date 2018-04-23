@@ -211,15 +211,15 @@ class My_blueTooth():
 					catagory=bluetooth_list[0]
 					tagid=bluetooth_list[1]
 					sensordata=bluetooth_list[2:]
-					tag_list.append({'RSSI':myrssi,'catagory':catagory,'ID':tagid,'sens':sensordata})
+					tag_list.append({'R':myrssi,'c':catagory,'ID':tagid,'s':sensordata})
 			i=i+1
 		return tag_list
 
-	def send_intergation(self): #sends out interagtoin signal and returns tags scanned
-		GPIO.output(3,GPIO.HIGH)
+	def send_interrogation(self, channel): #sends out interrogation signal and returns tags scanned
+		GPIO.output(channel,GPIO.HIGH)
 		self.blue_scan_me()
 		print self.devices
-		GPIO.output(3,GPIO.LOW)
+		GPIO.output(channel,GPIO.LOW)
 		tags=self.blue_tooth_parse()
 		print tags
 		return tags
@@ -577,45 +577,62 @@ class GPS:
 				mylon=-(self.Lon_deg+self.Lon_min/60)#),myGPS.Lon_hem]#"{0:<4d}deg {1:<7.4f}min {2}".format(myGPS.Lon_deg,myGPS.Lon_min,myGPS.Lon_hem)
 			else:
 				mylon=self.Lon_deg+self.Lon_min/60
-			myalt=myGPS.alt#"{0:<7.2f}".format(myGPS.alt)
-			mysats="{0:d}".format(myGPS.sats)
 
 		else:
 			print "\tInvalid Values (no fix)"
 
 			# Print to file
-			mylat="NaN\tNaN\tNaN\t"
-			mylon="NaN\tNaN\tNaN\t"
-			myalt="NaN\t"
-			mysats="NaN\t"
-		return mytime, {'fix':myfix, 'lat': mylat, 'lon': mylon, 'alt': myalt, 'sats':mysats}
+			mylat="NaN"
+			mylon="NaN"
+		return mytime, {'la': mylat, 'lo': mylon}
 
-nodeID= 1
-tostore = {}
-ARDU_ADDR				= 0x41# 'A' for arduino
-RPI_CMD_PING		= 0x00# Ping for bootup				Payload: 0 bytes
-RPI_CMD_SEND		= 0x11# Send data to RPi				Payload: N bytes
-RPI_CMD_INTERR	= 0x22# Send interrogation signal through LoRa	Payload: ? bytes
-RPI_CMD_ACK			= 0x33# Interrogation ack
+#---------------------------------------------------------------------------
+# Interrupts
+def Enable_Interrogate():
+	global INT_ENABLE 		# Declare reference flag
+	INT_ENABLE = 1 			# Set flag high to trigger interrogation
 
-RPI_PIN_I2C			= 8# RPi flag pin
-#nodeID					= 0# The node ID used by LoRa, assigned by server
+#---------------------------------------------------------------------------
 
-RPI_PIN_INT			= 11# RPi interrogation pin
+
+
+nodeID 				= 1
+tostore 			= {}
+ARDU_ADDR			= 0x41  # 'A' for arduino
+RPI_CMD_PING		= 0x00  # Ping for bootup				Payload: 0 bytes
+RPI_CMD_SEND		= 0x11  # Send data to RPi				Payload: N bytes
+RPI_CMD_INTERR		= 0x22  # Send interrogation signal through LoRa	Payload: ? bytes
+RPI_CMD_ACK			= 0x33  # Interrogation ack
+
+RPI_PIN_I2C			= 8 	# RPi flag pin
+#nodeID				= 0 	# The node ID used by LoRa, assigned by server
+
+RPI_PIN_INT			= 11 	# RPi interrogation pin
+INT_ENABLE 			= 0 	# Enable FLG for interrogation pin
+
 
 if __name__ == "__main__":
 	myI2c = MyI2C();
-	GPIO.setmode(GPIO.BOARD)
+	
+	# Configure GPIO Pins
+	GPIO.setmode(GPIO.BOARD) 	# Use Physical Pin numbers for GPIO Channel ref (I.E use 40 for GPIO21)
+	GPIO.setup(RPI_PIN_INT, GPIO.IN)
 	#GPIO.setup(3,GPIO.OUT)
 	#GPIO.setup(9, GPIO.IN)
     #GPIO.setup(messageInterruptPIN, GPIO.IN)
+
+    # Watch for interrogate signal from arduino (software interrupt)
+    GPIO.add_event_detect(RPI_PIN_INT, GPIO.RISING,  callback = Enable_Interrogate)
+
+    # Enable GPS and bluetooth instances
 	myGPS = GPS()
 	blue  = My_blueTooth()
 	#counter=1000
 	#while(counter!=0):
 	while(1):
-		if(0):#intergation):
-			tags=blue.send_intergation()
+		if(INT_ENABLE):	#Send interrogation signal:
+			tags=blue.send_interrogation(RPI_PIN_INT)
+			INT_ENABLE = 0
 		else:
 			tags=blue.receive_tags()
 		gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
