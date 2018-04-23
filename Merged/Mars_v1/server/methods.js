@@ -15,12 +15,43 @@ Meteor.methods({
     'arduinoStatus': function(nodeID, status) {
         console.log('Node'+nodeID+"'s"+' arduino status changed to '+status+'!');
     },
-    'nodePacket': function(message) {
-        console.log('Receiving: ', message);
-        let parsed = JSON.parse(message);
-        console.log('Parsed: ');
-        console.log(parsed);
+    'arduinoMessage': function(message) {
+        console.log('Message from Arduino: ');
+        var result = "";
+        var i;
+        for(i = 4; i < message.length; i++) {
+            result += String.fromCharCode(message[i]);
+        }
+        console.log(result);
+
+        var json = JSON.parse(result);
+
+        if(json['packet']) {
+            var packet = json['packet'];
+            if(packet['NodeID'] && packet['Location'] && packet['TimeStamp']) {
+                var nodeSubmission = {
+                    NodeID: packet['NodeID'],
+                    gps: {
+                        lat: packet['Location']['lat'],
+                        lon: packet['Location']['lon'],
+                        timestamp: new Date() + parseInt(packet['TimeStamp'])
+                    }
+                };
+                Nodes.insert(nodeSubmission);
+                console.log(nodeSubmission);
+            } else {
+                console.log('packet not valid');
+            }
+        } else {
+            console.log('json not valid');
+        }
     },
+    // 'nodePacket': function(message) {
+    //     console.log('Receiving: ', message);
+    //     let parsed = JSON.parse(message);
+    //     console.log('Parsed: ');
+    //     console.log(parsed);
+    // },
 
     'downloadCSV': function(origin) {
         const collection = collectAssets(origin);

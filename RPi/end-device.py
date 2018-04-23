@@ -590,7 +590,7 @@ class GPS:
 			mysats="NaN\t"
 		return mytime, {'fix':myfix, 'lat': mylat, 'lon': mylon, 'alt': myalt, 'sats':mysats}
 
-nodeID=hex(1)
+nodeID= 1
 tostore = {}
 ARDU_ADDR				= 0x41# 'A' for arduino
 RPI_CMD_PING		= 0x00# Ping for bootup				Payload: 0 bytes
@@ -611,7 +611,7 @@ if __name__ == "__main__":
     #GPIO.setup(messageInterruptPIN, GPIO.IN)
 	myGPS = GPS()
 	blue  =My_blueTooth()
-	counter=5
+	counter=1
 	while(counter!=0):
 		if(0):#intergation):
 			tags=blue.send_intergation()

@@ -9,9 +9,11 @@ var RPI_CMD_PING	= 0x00;	// Ping for bootup				Payload: 0 bytes
 var RPI_CMD_SEND	= 0x11;	// Send data to RPi				Payload: N bytes
 var RPI_CMD_INTERR	= 0x22;	// Send interrogation signal through LoRa	Payload: ? bytes
 var RPI_CMD_ACK		= 0x33;	// Interrogation ack
+var RPI_CMD_RECEIVE = 0x44;
+var RPI_CMD_DONE	= 0x55;
 
 var RPI_PIN_I2C		= 8;	// RPi flag pin
-var nodeID		= 0;	// The node ID used by LoRa, assigned by server
+var nodeID			= 0;	// The node ID used by LoRa, assigned by server
 
 var RPI_PIN_INT		= 11;	// RPi interrogation pin
 
@@ -104,80 +106,75 @@ ddpclient.connect(function(error, wasReconnect) {
 	wire = new i2c(ARDU_ADDR, {device: '/dev/i2c-1'}); // point to your i2c address, debug provides REPL interface
 
 	// set up Interrogation pin
-	var int_flag = new Gpio(RPI_PIN_INT, 'in', 'rising');
-	int_flag.watch(function (err, value) {
-		if (err) {
-			return;
-		}
-
-		// Arduino is telling us to interrogate!
-		wire.writeByte(RPI_CMD_ACK, function(err) {
-			if(!err) {
-				ddpclient.call(
-					'arduinoStatus',
-					[nodeID, 'interrogating this node'],
-					function (error, result) {
-						console.log(result);
-					}
-				);
-			}
-		});
-	});
+	// var int_flag = new Gpio(RPI_PIN_INT, 'in', 'rising');
+	// int_flag.watch(function (err, value) {
+	// 	if (err) {
+	// 		return;
+	// 	}
+    //
+	// 	// Arduino is telling us to interrogate!
+	// 	wire.writeByte(RPI_CMD_ACK, function(err) {
+	// 		if(!err) {
+	// 			ddpclient.call(
+	// 				'arduinoStatus',
+	// 				[nodeID, 'interrogating this node'],
+	// 				function (error, result) {
+	// 					console.log(result);
+	// 				}
+	// 			);
+	// 		}
+	// 	});
+	// });
 
 	// set up I2C flag
 	var i2c_flag = new Gpio(RPI_PIN_I2C, 'in', 'rising'); //use GPIO pin 4 as output
-	i2c_flag.watch(function (err, value) { //Watch for hardware interrupts on i2c_flag GPIO, specify callback function
+	i2c_flag.watch(function (err, value) { //Watch for hardware interrupts on i2c_flag GPIO
 		if (err) { //if an error
 			console.error('There was an error', err); //output error message to console
 			return;
 		}
 
-		if(watchdog === 0) {
-			// Arduino has booted up, ping over I2C
-			console.log('Arduino has booted up, pinging over I2C');
-			wire.writeByte(RPI_CMD_PING, function(err) {
-				if(!err) {
-					wire.readByte(function(err, res) {
-						if(!err) {
-							console.log('size of pong: ', res);
-							wire.read(res, function(err, res) {
-								console.log('pong: ', res);
-							});
-						}
-					});
-				}
-				watchdog = timestamp();
-				sendWatchDog();
-			});
-
-		} else {
-			// Arduino has something to say, request over I2C
-			wire.writeByte(RPI_CMD_SEND, function(err) {
-				if(!err) {
-					wire.readByte(function(err, res) {
-						if(!err) {
-							console.log('size of bytes: ', res);
-							wire.read(res, function(err, res) {
-								console.log('data: ', res);
-                                ddpclient.call(
-                                    'nodePacket',
-                                    [res],
-                                    function (err, result) {
-                                        if(err) {
-                                            console.log('Could not call -nodePacket- server method');
-                                        } else {
-                                        	console.log(result);
-										}
-                                    }
-                                );
-							});
-						}
-					});
-				}
-			});
-		}
+		// Arduino has something to say, request over I2C
+        wire.writeByte(RPI_CMD_SEND, function(err) {
+        	if(!err) {
+                buffer = [];
+        		readByte(0);
+			} else {
+        		console.log("no.");
+			}
+		});
 	});
 });
+
+var buffer = [];
+var readByte = function (z) {
+    setTimeout(function () {
+        wire.readByte(function(err, res) {
+            console.log('z: '+z+', data: '+res);
+            if(res == 0 || res == 23 || err || z >= 251+50) {
+                //break early
+                wire.writeByte(RPI_CMD_DONE, function() {});
+                ddpclient.call(
+                    'arduinoMessage',
+                    [buffer],
+                    function (err, result) {
+                        if(err) {
+                            console.log('Could not call -arduinoMessage- server method');
+                        } else {
+                            console.log(result);
+                        }
+                    }
+                );
+            } else {
+            	if(z >= 50) {
+                    buffer.push(res);
+				}
+                readByte(z+1);
+            }
+        });
+	}, 1);
+
+}
 
 // Watch-Dog timer will ping Arduino for every 60 second interval of no response
 var watchdog = 0;

@@ -30,6 +30,7 @@
 #define RPI_CMD_INTERR    0x22  // Send interrogation signal through LoRa   Payload: ? bytes
 #define RPI_CMD_ACK       0x33  // Send interrogation ack                   Payload: 0 bytes
 #define RPI_CMD_RECEIVE   0x44  // Receive data from RPi                    Payload: N bytes
+#define RPI_CMD_DONE      0x55
 
 // define GPIO pin for RPi comms flag
 #define RPI_PIN_I2C       8     // RPi i2c flag pin
@@ -58,12 +59,12 @@ int16_t packetnum = 0;  // packet counter, we increment per xmission
 uint8_t i, node_read,count;
 uint8_t cmd = -1;
 uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-uint8_t transmitted_data[RH_RF95_MAX_MESSAGE_LEN];
 uint8_t len = sizeof(buf);
 
 uint8_t z = 0;
-char transmit_string[255] = "";
-char c;
+#define TRANSMISSION_CAP  251
+uint8_t transmit_string[TRANSMISSION_CAP] = "";
+uint8_t c;
 
 void setup()
 {
@@ -123,10 +124,8 @@ void setup_Tx(){
   Wire.begin(ARDU_ADDR);                  // Initiate the Wire library with self-assigned address
   Wire.onReceive(receiveData);            // Register receive event
   Wire.onRequest(sendData);               // Register request event
-
-  // Ping RPi to test communications
+  
   ping_count = 0;
-  digitalWrite(RPI_PIN_I2C, HIGH);
 
   // Set up Interrogate I/O
   pinMode(RPI_PIN_INT, OUTPUT);
@@ -134,10 +133,8 @@ void setup_Tx(){
 
   Serial.print("\n\nLoRa active!\n\n");
 
-  transmit_string[z++] = '0';
-  transmit_string[z++] = '_';
-  transmit_string[z++] = NodeAddr + 49;
-  transmit_string[z++] = '_';
+  reset_Buffer();
+  Wire.setClock(100000);
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
   //<< I2C setup
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,10 +154,10 @@ void receiveData(int numBytes) {
     break;
   case RPI_CMD_RECEIVE:
 
-    while(Wire.available()){                   //Read in node address to interrogate
+    while(Wire.available()){                   //Read in data to send
       c = Wire.read();
       if(c != 1) {
-        if(z < 255) {
+        if(z < TRANSMISSION_CAP) {
           transmit_string[z++] = c;
         } else {
           break;
@@ -168,22 +165,18 @@ void receiveData(int numBytes) {
       }
     }
 
-    if(c == 1 || z == 255) {
+    if(c == 1 || z == TRANSMISSION_CAP) {
       // done!
       Serial.print("\nTransmitting message: ");
-      Serial.println(transmit_string); delay(100);
+      Serial.println((char *)transmit_string); delay(100);
 
-      rf95.send((uint8_t *)transmit_string, sizeof(transmit_string));
+      rf95.send(transmit_string, sizeof(transmit_string));
       
-      for(int i = 0; i < 255; i++) {
-        transmit_string[i] = "";
-      }
-      z = 0;
-      transmit_string[z++] = '0';
-      transmit_string[z++] = '_';
-      transmit_string[z++] = NodeAddr + 49;
-      transmit_string[z++] = '_';
+      reset_Buffer();
     }
+    break;
+  case RPI_CMD_DONE:
+    digitalWrite(RPI_PIN_I2C, LOW); 
     break;
   default:
     break;
@@ -195,33 +188,48 @@ void sendData() {
   switch (cmd) {
   case RPI_CMD_PING:
                                             // Ping from RPi, initiated by RPi
-    Wire.write(1);
     Wire.write(ping_count);                 // Send self address back as pong
-     
     digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
     break;
   case RPI_CMD_SEND:
-//    Serial.println("I2C send request from RPi, sending data");
-    //Might need RPi delay inbetween command and sending data
-    Wire.write(sizeof(transmitted_data));
-    Wire.write(transmitted_data,sizeof(transmitted_data));           // Send-data request from Pi, can be initiated by Arduino
-    
-    digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
+    if(z == 251+50) {
+      Wire.write(0);
+      digitalWrite(RPI_PIN_I2C, LOW);         // Assume request was resolved, turn off flag pin
+      reset_Buffer();
+    } else if (z < 50) {
+      Wire.write(1);
+      z++;
+    } else if(z < 251+50) {
+      Wire.write(transmit_string[z++ - 50]);  // Send-data request from Pi, can be initiated by Arduino
+    } else {
+      Wire.write(0);
+    }
     break;
   default:
-    Serial.println("I2C command from RPi not recognized...\n");
-    Serial.println(cmd);
+    Wire.write(0);
   }
+}
+
+void reset_Buffer() {
+  for(int i = 0; i < TRANSMISSION_CAP; i++) {
+    transmit_string[i] = "";
+  }
+  z = 0;
+  transmit_string[z++] = '0';
+  transmit_string[z++] = '_';
+  transmit_string[z++] = NodeAddr + 49;
+  transmit_string[z++] = '_';
 }
 
 void Rx(){
   if (rf95.available())
   {
     if (rf95.recv(buf, &len))  // Should be a reply message for us now
-    { 
+    {
+      reset_Buffer();
       Serial.print("Got reply: ");
       Serial.println((char*)buf);
-      strcpy(transmitted_data,buf);
+      strcpy(transmit_string,buf);
       char* ToAddr_str = strtok(buf, "_");
       char* FromAddr_str =strtok(0,"_");
       char ToAddr = atoi(strtok(buf, "_"));
@@ -230,11 +238,14 @@ void Rx(){
       
       if(ToAddr == NodeAddr || ToAddr == 0){
         // Send data signal to RPi
-        digitalWrite(RPI_PIN_INT, HIGH);
-      }
-      else {
-        Serial.println("This message wasn't meant for me");
-        digitalWrite(RPI_PIN_INT, HIGH);
+        Serial.println("Message was for me!! Send to Pi");
+        delay(10);
+        z = 0;
+        digitalWrite(RPI_PIN_I2C, HIGH);
+      } else {
+        Serial.print("Not for me, for: ");
+        Serial.println(ToAddr);
+        delay(10);
       }
     }
     else
