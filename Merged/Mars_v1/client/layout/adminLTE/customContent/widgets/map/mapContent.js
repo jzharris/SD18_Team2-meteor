@@ -101,11 +101,7 @@ Template.mapContent.onCreated(function() {
                 // Node is already plotted on map
                 // Remove exsisting marker
                 nodeLayer.remove(pin);
-
-                console.log(txtbox)
                 removeMapObject(txtbox);
-
-
                 console.log('Removed map marker for node: ' + oldDocument._id);
               }
             }

@@ -22,7 +22,7 @@ Meteor.methods({
         for(i = 4; i < message.length; i++) {
             result += String.fromCharCode(message[i]);
         }
-        console.log(result);
+        console.log("\n\n" + result + "\n\n");
 
         var json = JSON.parse(result);
 
@@ -30,10 +30,10 @@ Meteor.methods({
             var packet = json['packet'];
             if(packet['NodeID'] && packet['Location'] && packet['TimeStamp']) {
                 var nodeSubmission = {
-                    NodeID: packet['NodeID'],
+                    nodeID: packet['NodeID'],
                     gps: {
-                        lat: packet['Location']['lat'],
-                        lon: packet['Location']['lon'],
+                        lat: packet['Location']['la'],
+                        lon: packet['Location']['lo'],
                         timestamp: new Date() + parseInt(packet['TimeStamp'])
                     }
                 };

@@ -613,7 +613,7 @@ INT_ENABLE 			= 0 	# Enable FLG for interrogation pin
 
 if __name__ == "__main__":
 	myI2c = MyI2C();
-	
+
 	# Configure GPIO Pins
 	GPIO.setmode(GPIO.BOARD) 	# Use Physical Pin numbers for GPIO Channel ref (I.E use 40 for GPIO21)
 	GPIO.setup(RPI_PIN_INT, GPIO.IN)
@@ -638,7 +638,7 @@ if __name__ == "__main__":
 		gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
 		print export_json_str(gpstimestamp,gpslocation,tags)
 		myI2c.send_message(export_json_str(gpstimestamp,gpslocation,tags))
-		time.sleep(60) 
+		time.sleep(60)
 		#counter=counter -1
 	#change_name("testhi")
 	#list=blue_scan_me()

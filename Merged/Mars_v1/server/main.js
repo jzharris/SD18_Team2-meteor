@@ -44,7 +44,7 @@ function groupNodesByID() {
         {$sort: {"gps.timestamp": -1}},
         { $group: {
           // Group by matching nodeID
-          _id: "$NodeID",
+          _id: "$nodeID",
 
           // Count number of matching docs for the group
           count: { $sum:  1 },

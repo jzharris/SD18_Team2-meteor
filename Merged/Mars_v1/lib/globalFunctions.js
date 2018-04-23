@@ -133,6 +133,9 @@ Icon = function(name,color) {
 }
 
 time_diff = function(timestamp) {
+  console.log(timestamp)
+  var timestamp = Date.parse(timestamp)
+  console.log(timestamp)
   var day = 60*60*24;
   var hour = 60*60;
   var min = 60;
