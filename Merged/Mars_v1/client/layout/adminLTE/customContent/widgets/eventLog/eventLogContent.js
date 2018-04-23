@@ -2,19 +2,29 @@ import { Session } from 'meteor/session'
 
 Template.eventLogContent.helpers({
   listcontent: function() {
-    // var nodelist = SortedNodes.find({}).fetch();
-    // console.log(nodelist)
-    // console.log('\n\n')
-    // var taglist = SortedTags.find({},{sort: {}}).fetch();
-    // console.log(taglist)
-    // console.log('\n\n')
+    // var nodedata = SortedNodes.find({},{sort: {"lastupdate": -1}}).map(function(node){
+    //
+    //   node.lastupdate = time_diff(node.lastupdate);
+    //
+    //   node.pos.map(function(x,index) {
+    //     node.pos[index].timestamp = formatDate(x.timestamp);
+    //   })
+    //
+    //   return node;
+    // })
+    //
+    // var tagdata = SortedTags.find({},{sort: {"lastupdate": -1}}).map(function(tag){
+    //
+    //   tag.lastupdate = time_diff(tag.lastupdate);
+    //
+    //   tag.pos.map(function(x,index) {
+    //     tag.pos[index].timestamp = formatDate(x.timestamp);
+    //   })
+    //
+    //   return tag;
+    // })
+    // console.log(tagdata)
 
-    // var  out = [
-    //   {title: 'Nodes', count: SortedNodes.count({}), list: SortedNodes.find({})},
-    //   {title: 'Tags', count: SortedTags.count({}), list: SortedTags.find({})}
-    // ]
-    //console.log(nodesCount)
-    //return out;
   }
 });
 
@@ -26,9 +36,9 @@ Template.nodelist.events({
 
 Template.nodelist.helpers({
   groupedNodes: function () {
-      var nodedata = SortedNodes.find({}).map(function(node){
+      var nodedata = SortedNodes.find({},{sort: {"lastupdate": -1}}).map(function(node){
 
-        node.lastupdate = time_diff(node.pos[0].timestamp);
+        node.lastupdate = time_diff(node.lastupdate);
 
         node.pos.map(function(x,index) {
           node.pos[index].timestamp = formatDate(x.timestamp);
@@ -45,14 +55,12 @@ Template.nodelist.helpers({
 
 Template.taglist.helpers({
   groupedTags: function () {
-    var tagdata = SortedTags.find({}).map(function(tag){
+    var tagdata = SortedTags.find({},{sort: {"lastupdate": -1}}).map(function(tag){
 
-      tag.lastupdate = time_diff(tag.pos[0].timestamp);
+      tag.lastupdate = time_diff(tag.lastupdate);
+      tag.pos.timestamp = formatDate(tag.pos.timestamp);
 
-      tag.pos.map(function(x,index) {
-        tag.pos[index].timestamp = formatDate(x.timestamp);
-      })
-
+      console.log(tag)
       return tag;
     })
     console.log(tagdata)
