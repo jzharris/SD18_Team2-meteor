@@ -208,10 +208,11 @@ class My_blueTooth():
 						name= name[4:]
 					bluetooth_list=bluetooth_string.split('\t')
 					bluetooth_list=bluetooth_list[:len(bluetooth_list)-1]
-					catagory=bluetooth_list[0]
-					tagid=bluetooth_list[1]
+					#catagory=bluetooth_list[0]
+					#tagid=bluetooth_list[1]
 					sensordata=bluetooth_list[2:]
-					tag_list.append({'R':myrssi,'c':catagory,'ID':tagid,'s':sensordata})
+					tag_list.append({'R':myrssi,'s':sensordata})
+					tag_list.append({'R':myrssi,'s':sensordata})
 			i=i+1
 		return tag_list
 
@@ -254,8 +255,7 @@ NodeID"""
 def export_json_str(gpstimestamp,gpslocation,tags):
 	#global tostore
 	#tostore[gpstimestamp]={'tags':tags,'NodeID':nodeID,'Location':gpslocation}
-	tostore['packet']={'tags':tags,'NodeID':nodeID,'Location':gpslocation,'TimeStamp':gpstimestamp}
-	message=json.dumps(tostore)
+	message=json.dumps({'ta':tags,'n':nodeID,'l':gpslocation,'ti':gpstimestamp})
 	return message
 
 def String_2_Bytes(message):
@@ -609,10 +609,12 @@ INT_ENABLE 			= 0 	# Enable FLG for interrogation pin
 myGPS = None
 blue = None
 myI2c = None
+busy = False
 
 #---------------------------------------------------------------------------
 # Interrupts
 def Enable_Interrogate(channel):
+	busy = True
 	print 'event!'
 	GPIO.output(21, 1)
 	time.sleep(1)
@@ -621,6 +623,7 @@ def Enable_Interrogate(channel):
 	export_json_str(gpstimestamp, gpslocation, tags)
 	myI2c.send_message(export_json_str(gpstimestamp, gpslocation, tags))
 	GPIO.output(21, 0)
+	busy = False
 
 
 #---------------------------------------------------------------------------
@@ -646,123 +649,13 @@ if __name__ == "__main__":
 	#counter=1000
 	#while(counter!=0):
 	while(1):
-		# if(INT_ENABLE):	#Send interrogation signal:
-		# tags=blue.send_interrogation(RPI_PIN_INT)
-		# 	INT_ENABLE = 0
-		# else:
-		GPIO.output(21, 1)
-		time.sleep(1)
-		tags=blue.receive_tags()
-		gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
-		print export_json_str(gpstimestamp,gpslocation,tags)
-		myI2c.send_message(export_json_str(gpstimestamp,gpslocation,tags))
-		GPIO.output(21, 0)
-		time.sleep(60)
-		#counter=counter -1
-	#change_name("testhi")
-	#list=blue_scan_me()
-	#print list
-	#print '\n\n'
-	#tags=blue_tooth_parse(list)
-	#print tags
-	#print '\n\n'
-	#blue_tooth_clear(list)
-	"""try:
-		# Record file properties
-		F_name_base = "GPS_Output_File"     # File name base string
-		F_F_max     = 10                    # Maximum number of text files to allow in one meas. set
-		F_meas_max  = 10000                 # Maximum number of measurements per file
+		if(not busy):
+			GPIO.output(21, 1)
+			time.sleep(1)
+			tags=blue.receive_tags()
+			gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
+			print export_json_str(gpstimestamp,gpslocation,tags)
+			myI2c.send_message(export_json_str(gpstimestamp,gpslocation,tags))
+			GPIO.output(21, 0)
+			time.sleep(60)
 
-		# Open initial measurement file
-		F_num       = 0                     # Appended counter (multiple files)
-		F_meas_cnt  = 0                     # Number of measurements in current file
-		F_name = "{0:s}_{1:>03d}.txt".format(F_name_base,F_num)
-		F_num += 1
-		F = open(F_name,"w")
-		F.write("fix_type\ttime\tLat_deg\tLat_min\tLat_hem\tLon_deg\tLon_min\tLon_hem\tAltitude\tdx\tdy\tdz\tNum_Sats\n")
-
-		print "Beggining Comms..."
-		while(1):
-			# os.system("clear")
-			myGPS.read()
-			# print("Raw NMEA1: > {}".format(myGPS.NMEA1))
-			# print("GPS Output (Read_time = {0:<6.4f} s):\n".format(myGPS.read_time))
-
-			# Open record file based on current measurement count
-			if(F_meas_cnt >= F_meas_max):
-				# Measurement count exceeded, Close current file and open new file
-				F.close()
-				if((F_num + 1) > F_F_max):
-					print "Record file max exceeded, exiting..."
-					exit()
-				else:
-					F_name = "{0:s}_{1:>03d}.txt".format(F_name_base,F_num)
-					F_num += 1
-					F = open(F_name,"w")
-					F.write("fix_type\ttime\tLat_deg\tLat_min\tLat_hem\tLon_deg\tLon_min\tLon_hem\tAltitude\tdx\tdy\tdz\tNum_Sats\n")
-					F_meas_cnt = 0
-
-			if(myGPS.fix != 0 ):
-				'''
-					# Print to screen
-					print("Verbatim Readings: ")
-					print("\ttime [s]   := {0:<10.3f} s".format(myGPS.time_s))
-					print("\tLatitude   := {0:<4d} deg, {1:<7.4f} min, {2}".format(myGPS.Lat_deg,myGPS.Lat_min,myGPS.Lat_hem))
-					print("\tLongitude  := {0:<4d} deg, {1:<7.4f} min, {2}".format(myGPS.Lon_deg,myGPS.Lon_min,myGPS.Lon_hem))
-					print("\tAltitude   := {0:<7.2f} m".format(myGPS.alt))
-					print("\n\tfix type   := {0:d}".format(myGPS.fix))
-					print("\tNum Sats   := {0:d}".format(myGPS.sats))
-					print("Write to File    := {0:s}".format(F_name))
-				'''
-				print("Meas. Progress   := {0:<7d}/{1:<7d}, read time := {2:<6.4f} s".format(((F_num-1)*F_meas_max + F_meas_cnt),(F_F_max*F_meas_max),myGPS.read_time))
-				'''
-					print("\nInterpreted Readings and Differential Shift")
-					print("\tLatitude   := {0:<7.4f} deg N,\tLat_0 = {1:<7.4f}".format(myGPS.Lat_float,myGPS.Lat_float_0))
-					print("\tLongitude  := {0:<7.4f} deg N,\tLon_0 = {1:<7.4f}".format(myGPS.Lon_float,myGPS.Lon_float_0))
-					print("\tAltitude   := {0:<7.2f} m".format(myGPS.alt))
-					print("\n\tKm_Lat     := {0:<7.2f} km/deg".format(myGPS.Km_Lat))
-					print("\tKm_Lon     := {0:<7.2f} km/deg".format(myGPS.Km_Lon))
-					print("\n\tdX         := {0:<7.2f} m").format(myGPS.dx)
-					print("\tdY         := {0:<7.2f} m").format(myGPS.dy)
-					print("\tdZ         := {0:<7.2f} m").format(myGPS.dz)
-					# print("\tLast Diff  := {0:d}".format(myGPS.D_updt))
-				'''
-
-				# Print Measurement to file
-				F.write("{0:d}".format(myGPS.fix))
-				F.write("\t{0:<10.3f}".format(myGPS.time_s))
-				F.write("\t{0:<4d}\t{1:<7.4f}\t{2}".format(myGPS.Lat_deg,myGPS.Lat_min,myGPS.Lat_hem))
-				F.write("\t{0:<4d}\t{1:<7.4f}\t{2}".format(myGPS.Lon_deg,myGPS.Lon_min,myGPS.Lon_hem))
-				F.write("\t{0:<7.2f}".format(myGPS.alt))
-
-				# F.write("\t{0:<7.2f}".format(myGPS.dx))
-				# F.write("\t{0:<7.2f}".format(myGPS.dy))
-				# F.write("\t{0:<7.2f}".format(myGPS.dz))
-
-				F.write("\t{0:d}".format(myGPS.sats))
-				# F.write("\tLast Diff  := {0:d}".format(myGPS.D_updt))
-				F.write("\n");
-				F_meas_cnt += 1
-			else:
-				# Print to screen
-				print("\ttime [s]   := {0:<10.3f} s".format(myGPS.time_s))
-				print "\tInvalid Values (no fix)"
-
-				# Print to file
-				F.write("{0:d}\t".format(myGPS.fix))
-				F.write("{0:<10.3f}\t".format(myGPS.time_s))
-				F.write("NaN\tNaN\tNaN\t")
-				F.write("NaN\tNaN\tNaN\t")
-				F.write("NaN\t")
-				F.write("NaN\tNaN\tNaN\t")
-				F.write("NaN\t")
-				F.write("\n");
-				F_meas_cnt += 1
-
-	except (KeyboardInterrupt, SystemExit):     # End on ctrl+c
-		print "Killing Comms"
-		myGPS.serialPort.write("$PMTK251,9600*17\r\n")      # Revert to Native Baud Rate (9600)
-		time.sleep(0.5)                                     # Wait for command to execute
-		myGPS.serialPort.close()                            # Close serial Port
-		print "Done.\nExiting."
-"""

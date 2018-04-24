@@ -47,7 +47,29 @@ Meteor.methods({
                 Nodes.insert(nodeSubmission);
                 console.log(nodeSubmission);
             } else {
-                console.log('packet not valid');
+                console.log('not a valid node packet');
+            }
+
+            if(packet['NodeID'] && packet['tags']) {
+                var tagSubmission = {
+                    nodeID: packet['NodeID'],
+                    tagID: parseInt(message[3]),
+                    measurements: []
+                };
+
+                for(var t in packet['tags']) {
+                    tagSubmission.measurements.push({
+                        type: 'Sensor',
+                        label: 'Count',
+                        data: [{
+                            rssi: parseInt(packet['tags'][t].R),
+                            value: packet['tags'][t].s.length > 2 ? parseInt(packet['tags'][t].s[2]) : 0
+                        }]
+                    });
+                }
+
+                Tags.insert(tagSubmission);
+                console.log(tagSubmission);
             }
         } else {
             console.log('json not valid');
