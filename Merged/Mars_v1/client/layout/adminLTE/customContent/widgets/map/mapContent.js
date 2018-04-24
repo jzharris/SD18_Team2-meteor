@@ -59,7 +59,6 @@ Template.mapContent.onCreated(function() {
     // ================================================
     // Reactively update map
         self.autorun(function() {
-
           const nodes = SortedNodes.find().observe({
 
             added: function(document) {

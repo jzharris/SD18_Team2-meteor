@@ -15,6 +15,9 @@ Meteor.methods({
     'arduinoStatus': function(nodeID, status) {
         console.log('Node'+nodeID+"'s"+' arduino status changed to '+status+'!');
     },
+    'getStatus': function(){
+        return Status.findOne({});
+    },
     'arduinoMessage': function(message) {
         console.log('Message from Arduino: ');
         var result = "";
@@ -73,10 +76,6 @@ Meteor.methods({
       //console.log(randomNode);
       return randomNode
 
-    },
-
-    'getStatus': function(){
-      return Status.findOne({});
     }
 
 });

@@ -53,12 +53,12 @@ char ping_count = 0;             // Flag for pinging
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 // Define Node Address
-#define NodeAddr 1
+#define NodeAddr 2
 
 int16_t packetnum = 0;  // packet counter, we increment per xmission
 uint8_t i, node_read,count;
 uint8_t cmd = -1;
-uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+uint8_t buf[251];
 uint8_t len = sizeof(buf);
 
 uint8_t z = 0;
@@ -140,6 +140,17 @@ void setup_Tx(){
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
+void reset_Buffer() {
+  for(int i = 0; i < TRANSMISSION_CAP; i++) {
+    transmit_string[i] = "";
+  }
+  z = 0;
+  transmit_string[z++] = '1';           // default gateway node: 1
+  transmit_string[z++] = '_';
+  transmit_string[z++] = NodeAddr + 48;
+  transmit_string[z++] = '_';
+}
+
 String rec;
 void receiveData(int numBytes) {
   c = 0;
@@ -153,7 +164,9 @@ void receiveData(int numBytes) {
     digitalWrite(RPI_PIN_INT, LOW);
     break;
   case RPI_CMD_RECEIVE:
-
+    if(z == 0) {
+      reset_Buffer();
+    }
     while(Wire.available()){                   //Read in data to send
       c = Wire.read();
       if(c != 1) {
@@ -167,9 +180,11 @@ void receiveData(int numBytes) {
 
     if(c == 1 || z == TRANSMISSION_CAP) {
       // done!
-      Serial.print("\nTransmitting message: ");
-      Serial.println((char *)transmit_string); delay(100);
+//      Serial.print("\nTransmitting message: ");
+//      Serial.println((char *)transmit_string); delay(100);
 
+      transmit_string[0] = '1';
+      transmit_string[2] = NodeAddr + 48;
       rf95.send(transmit_string, sizeof(transmit_string));
       
       reset_Buffer();
@@ -216,67 +231,68 @@ void sendData() {
   }
 }
 
-void reset_Buffer() {
-  for(int i = 0; i < TRANSMISSION_CAP; i++) {
-    transmit_string[i] = "";
-  }
-  z = 0;
-  transmit_string[z++] = '0';
-  transmit_string[z++] = '_';
-  transmit_string[z++] = NodeAddr + 49;
-  transmit_string[z++] = '_';
-}
-
+char ToAddr = '0';
+char PrevTo = '\0';
+char FromAddr = '0';
+char PrevFrom = '\0';
 void Rx(){
   if (rf95.available())
   {
     if (rf95.recv(buf, &len))  // Should be a reply message for us now
     {
       reset_Buffer();
-      Serial.print("Got reply: ");
-      Serial.println((char*)buf);
+      //Serial.println((char*)buf);
       strcpy(transmit_string,buf);
-      //char* ToAddr_str = strtok(buf, "_");
-      //char* FromAddr_str =strtok(0,"_");
-      char ToAddr = atoi(strtok(buf, "_"));
-      char FromAddr = atoi(strtok(0,"_"));
-      delay(30);
-      
-      if(ToAddr == NodeAddr || ToAddr == 0){
-        // Send data signal to RPi
-        Serial.println("Message was for me!! Send to Pi");
-        delay(10);
-        z = 0;
-        digitalWrite(RPI_PIN_I2C, HIGH);
+      char* ToAddr_str = strtok(buf, "_");
+      ToAddr = atoi(strtok(buf, "_"));
+      FromAddr = atoi(strtok(0,"_"));
+      delay(5);
+
+      if(ToAddr == 0) {
+        // Meant for everyone - has to be interrogation signal. Interrogate and forward message along
+        //Serial.println("Meant for everyone");
+        digitalWrite(RPI_PIN_INT, HIGH);
+        rf95.send(transmit_string, sizeof(transmit_string));
+      } else if(ToAddr == NodeAddr) {
+        //Serial.println("Meant for me");
+        // Meant for me - could be interrogation or data
+        if(transmit_string[4] == '_') {
+          // interrogation
+          digitalWrite(RPI_PIN_INT, HIGH);
+          delay(50);
+          digitalWrite(RPI_PIN_INT, LOW);
+        } else {
+          //Serial.println("Not meant for me");
+          // data
+          z = 0;
+          digitalWrite(RPI_PIN_I2C, HIGH);
+        }
       } else {
-        Serial.print("Not for me, for: ");
-        Serial.println(ToAddr);
-        delay(10);
+        // Not meant for me - propagate message if have not already done so
+        if(*ToAddr_str != 's' && ToAddr != PrevTo && FromAddr != PrevFrom) {
+          PrevTo = ToAddr;
+          PrevFrom = FromAddr;
+          rf95.send(transmit_string, sizeof(transmit_string));
+        }
       }
     }
-    else
-    {
-      //TODO: send data it sees to Pi?
-      Serial.println("Listening...");
-    }
   }
-  
+  delay(1);
 }
 
 void Interrogate(){
   // Send a message to rf95_server
+  //Serial.println("Interrogating");
+  reset_Buffer();
   i = 0;
   
   while(Wire.available()){                   //Read in node address to interrogate
     node_read = Wire.read();
-//    Serial.print("node_read: ");
-//    Serial.println(node_read);
     if(node_read == 100){
-//      Serial.println("Got stop command");
-      strcat(transmit_string,"s"); 
+      transmit_string[0] = 's';
     }
     else{
-      itoa(node_read, transmit_string + i, 10);  //Add interrogation node address to string 
+      transmit_string[0] = node_read + 48;
     }
     i++;
   }
@@ -287,12 +303,10 @@ void Interrogate(){
   } else {
     delay(10);
   }
-  strcat(transmit_string,"_");                       //Parse between node to and from address
-  itoa(NodeAddr,transmit_string + i + 1,10);                 
-  strcat(transmit_string,"_Transmit");
-  Serial.println("Currently Transmitting"); delay(100);
-  rf95.send((uint8_t *)transmit_string, sizeof(transmit_string));
+  
+  transmit_string[4]='_';
+  delay(10);
+  rf95.send((uint8_t *)transmit_string, 5);
 
-    count++;
-  // Now wait for a reply
+  count++;
 }

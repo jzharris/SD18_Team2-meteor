@@ -273,6 +273,7 @@ class MyI2C:
 	 	self.bus = smbus.SMBus(1)    # 0 = /dev/i2c-0 (port I2C0), 1 = /dev/i2c-1 (port I2C1)
 	 def send_message(self, message):
 	 	new_message=String_2_Bytes(message)
+		new_message.insert(0, new_message.__len__())
 	 	new_message.append(1)
 		print new_message.__len__()
 	 	grouped = list(grouper(new_message, 31, 1))
@@ -610,7 +611,7 @@ myI2c = None
 # Interrupts
 def Enable_Interrogate(channel):
 	print 'event!'
-	tags = blue.receive_tags(RPI_PIN_INT)
+	tags = blue.receive_tags()
 	gpstimestamp, gpslocation = myGPS.out_put_time_and_pos()
 	export_json_str(gpstimestamp, gpslocation, tags)
 	myI2c.send_message(export_json_str(gpstimestamp, gpslocation, tags))

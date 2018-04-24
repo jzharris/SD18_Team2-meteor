@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 
-Meteor.startup(() => {
+Meteor.startup(function() {
   // code to run on server at startup
 
     Nodes.find().observe({
