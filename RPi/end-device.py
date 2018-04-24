@@ -507,59 +507,62 @@ class GPS:
 		NMEA1_array = self.NMEA1.split(",")
 
 		# Interpret NMEA sentence by type
-		if NMEA1_array[0] == "$GPGGA":
-			# Collect GPS time in seconds
-			self.time_s   = 3600.0*int(NMEA1_array[1][:2]) + 60.0*int(NMEA1_array[1][2:4]) + float(NMEA1_array[1][4:])
-			self.fix      = int(NMEA1_array[6])         # GPS Fix Flag
+		try:
+			if NMEA1_array[0] == "$GPGGA":
+				# Collect GPS time in seconds
+				self.time_s   = 3600.0*int(NMEA1_array[1][:2]) + 60.0*int(NMEA1_array[1][2:4]) + float(NMEA1_array[1][4:])
+				self.fix      = int(NMEA1_array[6])         # GPS Fix Flag
 
-			# Values only available on fix
-			if(self.fix != 0):
-				self.Lat_deg  = int(NMEA1_array[2][:-7])    # Latitude (degrees)
-				self.Lat_min  = float(NMEA1_array[2][-7:])  # Latitude (minutes)
-				self.Lat_hem  = NMEA1_array[3]              # N,S, orientation of latitude reading
-				self.Lon_deg  = int(NMEA1_array[4][:-7])    # Longitude (degrees)
-				self.Lon_min  = float(NMEA1_array[4][-7:])  # Longitude (minutes)
-				self.Lon_hem  = NMEA1_array[5]              # E,W, orientation of longitude reading
-				self.sats     = int(NMEA1_array[7])         # Number of connected sats
-				self.Horiz_dil= float(NMEA1_array[8])       # Horizontal dilution
-				self.alt      = float(NMEA1_array[9])       # Current altitude [m]
-				# self.D_updt   = int(NMEA1_array[13])        # time since last differential update
+				# Values only available on fix
+				if(self.fix != 0):
+					self.Lat_deg  = int(NMEA1_array[2][:-7])    # Latitude (degrees)
+					self.Lat_min  = float(NMEA1_array[2][-7:])  # Latitude (minutes)
+					self.Lat_hem  = NMEA1_array[3]              # N,S, orientation of latitude reading
+					self.Lon_deg  = int(NMEA1_array[4][:-7])    # Longitude (degrees)
+					self.Lon_min  = float(NMEA1_array[4][-7:])  # Longitude (minutes)
+					self.Lon_hem  = NMEA1_array[5]              # E,W, orientation of longitude reading
+					self.sats     = int(NMEA1_array[7])         # Number of connected sats
+					self.Horiz_dil= float(NMEA1_array[8])       # Horizontal dilution
+					self.alt      = float(NMEA1_array[9])       # Current altitude [m]
+					# self.D_updt   = int(NMEA1_array[13])        # time since last differential update
 
-				# Compute N Reading latitude (float)
-				self.Lat_float = self.Lat_deg + self.Lat_min/60.0
-				if(self.Lat_hem == 'S'):
-					self.Lat_float = -self.Lat_float
+					# Compute N Reading latitude (float)
+					self.Lat_float = self.Lat_deg + self.Lat_min/60.0
+					if(self.Lat_hem == 'S'):
+						self.Lat_float = -self.Lat_float
 
-				# Compute E Reading longitude (float)
-				self.Lon_float = self.Lon_deg + self.Lon_min/60.0
-				if(self.Lon_hem == 'W'):
-					self.Lon_float = -self.Lon_float
+					# Compute E Reading longitude (float)
+					self.Lon_float = self.Lon_deg + self.Lon_min/60.0
+					if(self.Lon_hem == 'W'):
+						self.Lon_float = -self.Lon_float
 
-				# Acquire initial location measurement
-				if (self.Init_Reading == 0):
-					self.Lat_float_0 = self.Lat_float
-					self.Lon_float_0 = self.Lon_float
-					self.alt_0       = self.alt
+					# Acquire initial location measurement
+					if (self.Init_Reading == 0):
+						self.Lat_float_0 = self.Lat_float
+						self.Lon_float_0 = self.Lon_float
+						self.alt_0       = self.alt
 
-					# Compute differential coordinate conversions (degrees to km in Lat/Lon)
-					self.Km_Lat =  (111.13209 * math.cos(0*self.Lat_float_0*(math.pi/180))) \
-								 + ( -0.56605 * math.cos(2*self.Lat_float_0*(math.pi/180))) \
-								 + (  0.00120 * math.cos(4*self.Lat_float_0*(math.pi/180)))
-					self.Km_Lon =  (111.41513 * math.cos(1*self.Lat_float_0*(math.pi/180))) \
-								 + ( -0.09455 * math.cos(3*self.Lat_float_0*(math.pi/180))) \
-								 + (  0.00012 * math.cos(5*self.Lat_float_0*(math.pi/180)))
-					self.Init_Reading = 1
+						# Compute differential coordinate conversions (degrees to km in Lat/Lon)
+						self.Km_Lat =  (111.13209 * math.cos(0*self.Lat_float_0*(math.pi/180))) \
+									 + ( -0.56605 * math.cos(2*self.Lat_float_0*(math.pi/180))) \
+									 + (  0.00120 * math.cos(4*self.Lat_float_0*(math.pi/180)))
+						self.Km_Lon =  (111.41513 * math.cos(1*self.Lat_float_0*(math.pi/180))) \
+									 + ( -0.09455 * math.cos(3*self.Lat_float_0*(math.pi/180))) \
+									 + (  0.00012 * math.cos(5*self.Lat_float_0*(math.pi/180)))
+						self.Init_Reading = 1
 
-				# Compute Differential distance [m] from starting location
-				D_Lat = (self.Lat_float - self.Lat_float_0);            # Differential Latitude from starting point
-				D_Lon = (self.Lon_float - self.Lon_float_0);            # Differential Longitude from starting point
+					# Compute Differential distance [m] from starting location
+					D_Lat = (self.Lat_float - self.Lat_float_0);            # Differential Latitude from starting point
+					D_Lon = (self.Lon_float - self.Lon_float_0);            # Differential Longitude from starting point
 
-				self.dx = D_Lon*self.Km_Lon*1000;                       # Map positive x to east of prime meridian
-				self.dy = D_Lat*self.Km_Lat*1000;                       # Map positive y to north of equator
-				self.dz = self.alt - self.alt_0;                        # Map positive z to altitude
+					self.dx = D_Lon*self.Km_Lon*1000;                       # Map positive x to east of prime meridian
+					self.dy = D_Lat*self.Km_Lat*1000;                       # Map positive y to north of equator
+					self.dz = self.alt - self.alt_0;                        # Map positive z to altitude
 
-		else:
-			print "Invalid (Or unsupported) NMEA Sequence!"
+			else:
+				print "Invalid (Or unsupported) NMEA Sequence!"
+		except Exception:
+			print "Something went wrong..."
 
 		self.read_time = time.time() - t_0
 
@@ -589,7 +592,7 @@ class GPS:
 
 
 
-nodeID 				= 1
+nodeID 				= 2
 tostore 			= {}
 ARDU_ADDR			= 0x41  # 'A' for arduino
 RPI_CMD_PING		= 0x00  # Ping for bootup				Payload: 0 bytes
@@ -611,10 +614,13 @@ myI2c = None
 # Interrupts
 def Enable_Interrogate(channel):
 	print 'event!'
+	GPIO.output(21, 1)
+	time.sleep(1)
 	tags = blue.receive_tags()
 	gpstimestamp, gpslocation = myGPS.out_put_time_and_pos()
 	export_json_str(gpstimestamp, gpslocation, tags)
 	myI2c.send_message(export_json_str(gpstimestamp, gpslocation, tags))
+	GPIO.output(21, 0)
 
 
 #---------------------------------------------------------------------------
@@ -626,6 +632,7 @@ if __name__ == "__main__":
 	# Configure GPIO Pins
 	GPIO.setmode(GPIO.BOARD) 	# Use Physical Pin numbers for GPIO Channel ref (I.E use 40 for GPIO21)
 	GPIO.setup(RPI_PIN_INT, GPIO.IN)
+	GPIO.setup(21, GPIO.OUT)
 	#GPIO.setup(3,GPIO.OUT)
 	#GPIO.setup(9, GPIO.IN)
     #GPIO.setup(messageInterruptPIN, GPIO.IN)
@@ -643,10 +650,13 @@ if __name__ == "__main__":
 		# tags=blue.send_interrogation(RPI_PIN_INT)
 		# 	INT_ENABLE = 0
 		# else:
+		GPIO.output(21, 1)
+		time.sleep(1)
 		tags=blue.receive_tags()
 		gpstimestamp,gpslocation = myGPS.out_put_time_and_pos()
 		print export_json_str(gpstimestamp,gpslocation,tags)
 		myI2c.send_message(export_json_str(gpstimestamp,gpslocation,tags))
+		GPIO.output(21, 0)
 		time.sleep(60)
 		#counter=counter -1
 	#change_name("testhi")
