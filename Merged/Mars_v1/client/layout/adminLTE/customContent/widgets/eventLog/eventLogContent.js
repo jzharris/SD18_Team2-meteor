@@ -60,10 +60,10 @@ Template.taglist.helpers({
       tag.lastupdate = time_diff(tag.lastupdate);
       tag.pos.timestamp = formatDate(tag.pos.timestamp);
 
-      console.log(tag)
+      // console.log(tag)
       return tag;
     })
-    console.log(tagdata)
+    // console.log(tagdata)
     return tagdata;
 
   }

@@ -6,31 +6,40 @@ Meteor.startup(function() {
     Nodes.find().observe({
 
       added: function(document) {
+        //console.log('[ADDED] New data packet for Node ' + document.nodeID)
         groupNodesByID();
       },
 
       changed: function(newDocument, oldDocument) {
+        var id = newDocument.nodeID.toString();
+        //console.log('[CHANGED] Packet for Node ' + id + ' changed')
         groupNodesByID();
       },
 
       removed: function(oldDocument) {
-        SortedNodes.remove(oldDocument.nodeID);
+        var id = oldDocument.nodeID.toString();
+        //console.log('[REMOVED] Packet for Node ' + id + ' removed')
+        SortedNodes.remove(id);
       }
     });
 
     Tags.find().observe({
 
       added: function(document) {
+        //console.log('[ADDED] New data packet for Tag ' + document.tagID)
         groupTagsByID();
       },
 
       changed: function(newDocument, oldDocument) {
+        var id = newDocument.tagID.toString();
+        //console.log('[CHANGED] Packet for Tag ' + id + ' changed')
         groupTagsByID();
       },
 
       removed: function(oldDocument) {
-        //console.log('removed: ' + oldDocument.tagID);
-        SortedTags.remove(oldDocument.tagID);
+        var id = oldDocument.tagID.toString();
+        //console.log('[REMOVED] Packet for Tag ' + id + ' removed')
+        SortedTags.remove(id);
       }
     });
 
@@ -39,6 +48,7 @@ Meteor.startup(function() {
 // Database filtering functions
 function groupNodesByID() {
   // Group all documented node packets by nodeID
+  //console.log("[AGGREGATE] Grouping nodes and formating collection for client")
     var nodeIDs = Nodes.aggregate([
         {$sort: {"gps.timestamp": -1}},
         { $group: {
@@ -61,9 +71,17 @@ function groupNodesByID() {
             }
          }, 0]}
       }},
-      {$out: 'sortedNodes'}
     ]);
 
+    nodeIDs.forEach(function(node){
+      node._id = node._id.toString();
+      // console.log("[AGGREGATE] Sorted Documents:")
+      // console.log(node)
+      SortedNodes.upsert({_id: node._id},node,{upsert: true});
+
+    });
+    // console.log("[AGGREGATE] Collection updated: SortedNodes")
+    // console.log(SortedNodes.find({}).fetch())
 
     //console.log(SortedNodes.find())
     // creates a document for each nodes
@@ -75,7 +93,8 @@ function groupNodesByID() {
 
 function groupTagsByID() {
   // Group all documented node packets by nodeID
-    Tags.aggregate([
+  //console.log("[AGGREGATE] Grouping tags and formating collection for client")
+    var tagIDs = Tags.aggregate([
       {$lookup:
         {
           from: "sortedNodes",
@@ -118,9 +137,16 @@ function groupTagsByID() {
         "pos.timestamp": new Date(),
         "lastupdate": new Date()
       }},
+    ]);
+    tagIDs.forEach(function(tag){
+      tag._id = tag._id.toString();
+      // console.log("[AGGREGATE] Sorted Documents:")
+      // console.log(tag)
+      SortedTags.upsert({_id: tag._id},tag,{upsert: true});
 
-      {$out: 'sortedTags'}
-    ])
+    });
+    // console.log("[AGGREGATE] Collection updated: SortedTags")
+    // console.log(SortedTags.find({}).fetch())
 
     // creates a document for each tag
     // the documents include the following fields
