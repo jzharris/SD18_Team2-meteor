@@ -53,7 +53,7 @@ char ping_count = 0;             // Flag for pinging
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 // Define Node Address
-#define NodeAddr 2
+#define NodeAddr 1
 
 int16_t packetnum = 0;  // packet counter, we increment per xmission
 uint8_t i, node_read,count;
@@ -61,7 +61,7 @@ uint8_t cmd = -1;
 uint8_t buf[251];
 uint8_t len = sizeof(buf);
 
-uint8_t z = 0;
+int z = 0;
 #define TRANSMISSION_CAP  251
 uint8_t transmit_string[TRANSMISSION_CAP] = "";
 uint8_t c;

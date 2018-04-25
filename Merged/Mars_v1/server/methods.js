@@ -29,18 +29,18 @@ Meteor.methods({
 
         var json = JSON.parse(result);
 
-        if(json['packet']) {
-            var packet = json['packet'];
-            if(packet['NodeID'] && packet['Location'] && packet['TimeStamp']) {
+        if(json['p']) {
+            var packet = json['p'];
+            if(packet['n'] && packet['l'] && packet['ti']) {
                 var t = new Date();
                 t.setHours(0,0,0,0);
-                t.setSeconds(t.getSeconds() + parseInt(packet['TimeStamp']));
+                t.setSeconds(t.getSeconds() + parseInt(packet['ti']));
 
                 var nodeSubmission = {
-                    nodeID: packet['NodeID'],
+                    nodeID: packet['n'],
                     gps: {
-                        lat: packet['Location']['la'],
-                        lon: packet['Location']['lo'],
+                        lat: packet['l']['la'],
+                        lon: packet['l']['lo'],
                         timestamp: t
                     }
                 };
@@ -50,20 +50,20 @@ Meteor.methods({
                 console.log('not a valid node packet');
             }
 
-            if(packet['NodeID'] && packet['tags']) {
+            if(packet['n'] && packet['ta']) {
                 var tagSubmission = {
-                    nodeID: packet['NodeID'],
+                    nodeID: packet['n'],
                     tagID: parseInt(message[3]),
                     measurements: []
                 };
 
-                for(var t in packet['tags']) {
+                for(var t in packet['ta']) {
                     tagSubmission.measurements.push({
                         type: 'Sensor',
                         label: 'Count',
                         data: [{
-                            rssi: parseInt(packet['tags'][t].R),
-                            value: packet['tags'][t].s.length > 2 ? parseInt(packet['tags'][t].s[2]) : 0
+                            rssi: parseInt(packet['ta'][t].R),
+                            value: packet['ta'][t].s.length > 2 ? parseInt(packet['ta'][t].s[2]) : 0
                         }]
                     });
                 }
@@ -72,7 +72,7 @@ Meteor.methods({
                 console.log(tagSubmission);
             }
         } else {
-            console.log('json not valid');
+            console.log('could not parse');
         }
     },
     // 'nodePacket': function(message) {

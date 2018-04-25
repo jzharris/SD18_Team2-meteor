@@ -255,7 +255,9 @@ NodeID"""
 def export_json_str(gpstimestamp,gpslocation,tags):
 	#global tostore
 	#tostore[gpstimestamp]={'tags':tags,'NodeID':nodeID,'Location':gpslocation}
-	message=json.dumps({'ta':tags,'n':nodeID,'l':gpslocation,'ti':gpstimestamp})
+	tostore['p'] = {'ta':tags,'n':nodeID,'l':gpslocation,'ti':gpstimestamp}
+	message=json.dumps(tostore)
+	print message
 	return message
 
 def String_2_Bytes(message):
