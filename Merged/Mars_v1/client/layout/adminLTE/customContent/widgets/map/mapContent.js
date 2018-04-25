@@ -59,25 +59,29 @@ Template.mapContent.onCreated(function() {
     // ================================================
     // Reactively update map
         self.autorun(function() {
+
           const nodes = SortedNodes.find().observe({
 
             added: function(document) {
               addNode(document);
 
-              var command = Status.find({}).fetch()[0].command;
-              if (command == 0){
-                nodeLayer.forEach(function(pin){
+              var status = Status.find({}).fetch()[0]
+              if (typeof status !== 'undefined'){
+                var command = status.command;
+                if (command == 0){
+                  nodeLayer.forEach(function(pin){
+                    nodeLayer.overrideStyle(pin, {icon: icons.node.selected});
+                  });
+
+                } else if (command == 100){
+                  nodeLayer.forEach(function(pin){
+                    nodeLayer.revertStyle();
+                  });
+
+                } else {
+                  var pin = nodeLayer.getFeatureById(command)
                   nodeLayer.overrideStyle(pin, {icon: icons.node.selected});
-                });
-
-              } else if (command == 100){
-                nodeLayer.forEach(function(pin){
-                  nodeLayer.revertStyle();
-                });
-
-              } else {
-                var pin = nodeLayer.getFeatureById(command)
-                nodeLayer.overrideStyle(pin, {icon: icons.node.selected});
+                }
               }
             },
 
@@ -94,13 +98,14 @@ Template.mapContent.onCreated(function() {
             },
 
             removed: function(oldDocument) {
-              console.log(txtbox)
               var pin = nodeLayer.getFeatureById(oldDocument._id);
               if (typeof pin !== 'undefined'){
                 // Node is already plotted on map
                 // Remove exsisting marker
                 nodeLayer.remove(pin);
-                removeMapObject(txtbox);
+                if (typeof txtbox !== 'undefined'){
+                  removeMapObject(txtbox);
+                }
                 console.log('Removed map marker for node: ' + oldDocument._id);
               }
             }
@@ -114,13 +119,13 @@ Template.mapContent.onCreated(function() {
             },
 
             changed: function(newDocument, oldDocument) {
-              console.log(newDocument)
+              //console.log(newDocument)
               var pos = newDocument.pos;
 
               if (typeof pos !== 'undefined'){
 
                 var latLng = new google.maps.LatLng({lat: pos.lat, lng: pos.lon});
-                console.log({lat: latLng.lat(), lon: latLng.lng()})
+                //console.log({lat: latLng.lat(), lon: latLng.lng()})
                 var pin = tagLayer.getFeatureById(newDocument._id);
                 pin.setGeometry(latLng);
                 pin.setProperty('timestamp', pos.timestamp);
@@ -135,7 +140,9 @@ Template.mapContent.onCreated(function() {
                 // Node is already plotted on map
                 // Remove exsisting marker
                 tagLayer.remove(pin);
-                removeMapObject(txtbox);
+                if (typeof txtbox !== 'undefined'){
+                  removeMapObject(txtbox);
+                }
 
                 console.log('Removed map marker for tag: ' + oldDocument._id);
               }
@@ -225,14 +232,10 @@ Template.mapContent.onCreated(function() {
     //============================
     // Marker Functions
         function addTag(tag) {
-          //var pos = triangulate(tag.nodeID);
           var pos = tag.pos;
-          // console.log('\nMongo says:\n')
-          // console.log(SortedTags._collection._docs._map)
+          // console.log('\nTag Data:')
+          // console.log(tag)
           // console.log('\n')
-          console.log('\nTag Data:')
-          console.log(tag)
-          console.log('\n')
 
           // Add tag marker
           var pin = tagLayer.getFeatureById(tag._id);
@@ -266,9 +269,9 @@ Template.mapContent.onCreated(function() {
         function addNode(node) {
           var gps = node.pos[0];
 
-          console.log('\nNode Data:')
-          console.log(node)
-          console.log('\n')
+          // console.log('\nNode Data:')
+          // console.log(node)
+          // console.log('\n')
 
           // Add node marker
           var pin = nodeLayer.getFeatureById(node._id);
