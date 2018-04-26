@@ -201,18 +201,19 @@ class My_blueTooth():
 				info=self.bl.get_device_info(self.devices[i]['mac_address'])
 				RSSI= info[-2].replace('\t','')
 				if RSSI[0:4]=="RSSI":
+					bluetooth_string = ""
 					myrssi=RSSI[5:]
 					name=name[4:]
 					while len(name)!=0:
 						bluetooth_string=bluetooth_string+name[0:4]+'\t'
 						name= name[4:]
+					print bluetooth_string
 					bluetooth_list=bluetooth_string.split('\t')
 					bluetooth_list=bluetooth_list[:len(bluetooth_list)-1]
-					#catagory=bluetooth_list[0]
-					#tagid=bluetooth_list[1]
+					category=bluetooth_list[0]
+					tagid=bluetooth_list[1]
 					sensordata=bluetooth_list[2:]
-					tag_list.append({'R':myrssi,'s':sensordata})
-					tag_list.append({'R':myrssi,'s':sensordata})
+					tag_list.append({'c':category,'I':tagid,'R':myrssi,'s':sensordata})
 			i=i+1
 		return tag_list
 
