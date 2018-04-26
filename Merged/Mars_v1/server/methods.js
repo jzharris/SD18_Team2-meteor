@@ -98,6 +98,13 @@ Meteor.methods({
       //console.log(randomNode);
       return randomNode
 
+    },
+
+    'fakeNode': function(id) {
+        fakenode(id);
+    },
+    'fakeTag': function(id) {
+        faketag(id);
     }
 
 });
