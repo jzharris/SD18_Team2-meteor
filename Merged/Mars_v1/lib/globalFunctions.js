@@ -41,6 +41,7 @@ tag = function(nodeID, tagID) {
     return {
         tagID: tagID,
         nodeID: nodeID,
+        sent: new Date(),
         measurements: measure
     };
 };
@@ -119,8 +120,8 @@ Icon = function(name,color) {
       this.scale = 0.8;
     }
     this.fillColor = color;
-    this.fillOpacity = 0.8;
-    this.strokeWeight = 0.6;
+    this.fillOpacity = 1;
+    this.strokeWeight = 1;
 
     return {
       path: this.path,
@@ -172,6 +173,7 @@ formatDate =  function(date) {
 }
 
 interrogate = function(command) {
+  command = parseInt(command);
   console.log('interrogating: ', command);
   var all = 0;
 

@@ -64,6 +64,12 @@
   border-right: thin solid #b8b1b1;
 }
 
+.item-value {
+  padding-right: 5px;
+  padding-left: 5px;
+  border-right: thin solid #b8b1b1;
+}
+
 .item-note {
   padding-right: 5px;
   padding-left: 5px;

@@ -7,13 +7,13 @@ Meteor.startup(function() {
 
       added: function(document) {
         //console.log('[ADDED] New data packet for Node ' + document.nodeID)
-        groupNodesByID();
+        groupNodesbyID();
       },
 
       changed: function(newDocument, oldDocument) {
         var id = newDocument.nodeID.toString();
         //console.log('[CHANGED] Packet for Node ' + id + ' changed')
-        groupNodesByID();
+        groupNodesbyID();
       },
 
       removed: function(oldDocument) {
@@ -27,13 +27,13 @@ Meteor.startup(function() {
 
       added: function(document) {
         //console.log('[ADDED] New data packet for Tag ' + document.tagID)
-        groupTagsByID();
+        groupTagsbyID();
       },
 
       changed: function(newDocument, oldDocument) {
         var id = newDocument.tagID.toString();
         //console.log('[CHANGED] Packet for Tag ' + id + ' changed')
-        groupTagsByID();
+        groupTagsbyID();
       },
 
       removed: function(oldDocument) {
@@ -46,7 +46,7 @@ Meteor.startup(function() {
 });
 // ================================================
 // Database filtering functions
-function groupNodesByID() {
+function groupNodesbyID() {
   // Group all documented node packets by nodeID
   //console.log("[AGGREGATE] Grouping nodes and formating collection for client")
     var nodeIDs = Nodes.aggregate([
@@ -82,18 +82,10 @@ function groupNodesByID() {
     });
     // console.log("[AGGREGATE] Collection updated: SortedNodes")
     // console.log(SortedNodes.find({}).fetch())
-
-    //console.log(SortedNodes.find())
-    // creates a document for each nodes
-    // the documents include the following fields
-    // _id: Group criteria, i.e nodeID
-    // count: Number of documents with the same nodeID
-    // gps: The gps data of the node including lat, long, and timestamp
-}
-
-function groupTagsByID() {
   // Group all documented node packets by nodeID
   //console.log("[AGGREGATE] Grouping tags and formating collection for client")
+}
+function groupTagsbyID() {
     var tagIDs = Tags.aggregate([
       {$lookup:
         {
@@ -107,9 +99,12 @@ function groupTagsByID() {
         "tagID": 1,
         "nodeID": 1,
         "measurements": 1,
+        "tagtime": "$sent",
         "lat": {$arrayElemAt: [{ $arrayElemAt: [ "$pos.pos.lat", 0 ] }, 0]},
         "lon": {$arrayElemAt: [{ $arrayElemAt: [ "$pos.pos.lon", 0 ] }, 0]},
+        "nodetime": {$arrayElemAt:["$pos.lastupdate",0]},
       }},
+      //{$match: {dateComp: 1}},
 
       { $group: {
           // Group by matching nodeID
@@ -131,7 +126,7 @@ function groupTagsByID() {
         "tagID": 1,
         "nodeID": 1,
         "count": 1,
-        "measurements": 1,
+        "measurements": {$arrayElemAt: ["$measurements", 0]},
         "pos.lat": "$lat",
         "pos.lon": "$lon",
         "pos.timestamp": new Date(),

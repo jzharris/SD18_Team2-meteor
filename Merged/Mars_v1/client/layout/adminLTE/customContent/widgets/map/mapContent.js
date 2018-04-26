@@ -167,6 +167,37 @@ Template.mapContent.onCreated(function() {
               });
         });
 
+        map.instance.addListener('click',
+            function (event) {
+              Nodes.insert({
+                  nodeID: Math.floor(Math.random()*9),
+                  nodeVersion: '1.0.0',
+                  nodeType: 'Tester',
+                  battery: {
+                      voltage: Random.fraction()*10,
+                      amperage: Random.fraction()*2,
+                      timestamp: new Date()
+                  },
+                  gps: {
+                    lat: event.latLng.lat(),
+                    lon: event.latLng.lng(),
+                    timestamp: new Date()
+                  }
+              });
+
+            });
+
+        map.instance.addListener('rightclick',
+            function (event) {
+              var tagid = id;
+
+              for (i in result){
+                //console.log(result[i]._id);
+                var newtag = tag(result[i]._id,tagid);
+                //console.log(newtag);
+                Tags.insert(newtag);
+              }
+            });
     //===================================================
     // Google Maps listeners for displaying infoboxes
         // Nodes: Mouseover event
@@ -320,9 +351,9 @@ Template.mapContent.onCreated(function() {
         }
 
         function drawlegend(){
-          $('<div />',{id: "legend", class: "infoBox"}).appendTo('.map-container');
+          $('<div />',{id: "legendbox",class: 'mapBtnBox'}).appendTo('.map-container');
+          $('<div />',{id: "legend", class: "infoBox"}).appendTo('#legendbox');
           //$('#legend').append("<h3>Legend</h3>");
-
           var legend = $('#legend');
           legend[0].title = "Map Legend";
 
@@ -340,7 +371,7 @@ Template.mapContent.onCreated(function() {
 
           label = '<span><svg height="22" width="22" viewBox="0 0 25 25"> <path d=' + icon + ' fill=' + color + '/></svg>' + name + '</span>';
           legend.append(label);
-          map.instance.controls[google.maps.ControlPosition.TOP_LEFT].push(legend[0]);
+          map.instance.controls[google.maps.ControlPosition.TOP_LEFT].push($('#legendbox')[0]);
         }
 
         function infobox() {

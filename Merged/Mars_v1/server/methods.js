@@ -32,9 +32,14 @@ Meteor.methods({
         if(json['p']) {
             var packet = json['p'];
             if(packet['n'] && packet['l'] && packet['ti']) {
+              var gpstime = parseInt(packet['ti']);
+              if (typeof gpastime !== 'undefined'){
                 var t = new Date();
                 t.setHours(0,0,0,0);
                 t.setSeconds(t.getSeconds() + parseInt(packet['ti']));
+              } else {
+                var t = new Date();
+              }
 
                 var nodeSubmission = {
                     nodeID: packet['n'],
@@ -46,30 +51,36 @@ Meteor.methods({
                 };
                 Nodes.insert(nodeSubmission);
                 console.log(nodeSubmission);
-            } else {
+            } else {ta
                 console.log('not a valid node packet');
             }
 
             if(packet['n'] && packet['ta']) {
-                var tagSubmission = {
-                    nodeID: packet['n'],
-                    tagID: parseInt(message[3]),
-                    measurements: []
-                };
-
                 for(var t in packet['ta']) {
-                    tagSubmission.measurements.push({
-                        type: 'Sensor',
-                        label: 'Count',
-                        data: [{
-                            rssi: parseInt(packet['ta'][t].R),
-                            value: packet['ta'][t].s.length > 2 ? parseInt(packet['ta'][t].s[2]) : 0
-                        }]
-                    });
+                    var tagSubmission = {
+                      nodeID: packet['n'],
+                      tagID: parseInt(packet['ta'][t].I),
+                      measurements: {
+                        label: packet['ta'][t].c,
+                        data: parseInt(packet['ta'][t].s[0])
+                      }
+                    }
+                    console.log(tagSubmission);
+                    Tags.insert(tagSubmission);
+                    // var tagSubmission = {
+                    //     nodeID: packet['n'],
+                    //     tagID: parseInt(message[3]),
+                    //     measurements: []
+                    // };
+                    // tagSubmission.measurements.push({
+                    //     type: 'Sensor',
+                    //     label: 'Count',
+                    //     data: [{
+                    //         rssi: parseInt(packet['ta'][t].R),
+                    //         value: packet['ta'][t].s.length > 2 ? parseInt(packet['ta'][t].s[2]) : 0
+                    //     }]
+                    // });
                 }
-
-                Tags.insert(tagSubmission);
-                console.log(tagSubmission);
             }
         } else {
             console.log('could not parse');

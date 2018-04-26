@@ -57,6 +57,11 @@ Template.taglist.helpers({
   groupedTags: function () {
     var tagdata = SortedTags.find({},{sort: {"lastupdate": -1}}).map(function(tag){
 
+      var data = tag.measurements.data;
+      if(data.length < 1 || data == undefined){
+        tag.measurements.data = 0;
+      }
+
       tag.lastupdate = time_diff(tag.lastupdate);
       tag.pos.timestamp = formatDate(tag.pos.timestamp);
 
