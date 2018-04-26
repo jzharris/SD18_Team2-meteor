@@ -32,15 +32,14 @@ tag = function(nodeID, tagID) {
             type: 'Type',
             label: 'Label',
             data: {
-                random1: Random.fraction(),
-                random2: Random.fraction()*10
+                45
             }
         });
     }
 
     return {
-        tagID: tagID,
         nodeID: nodeID,
+        tagID: tagID,
         sent: new Date(),
         measurements: measure
     };
