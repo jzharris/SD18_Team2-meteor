@@ -170,11 +170,11 @@ formatDate =  function(date) {
 }
 
 interrogate = function(command) {
-  command = parseInt(command);
   console.log('interrogating: ', command);
   var all = 0;
 
   if (typeof command !== 'undefined') {
+    command = parseInt(command);
     update = {command: command,timestamp: new Date()};
   } else {
     update = {command: all,timestamp: new Date()};
