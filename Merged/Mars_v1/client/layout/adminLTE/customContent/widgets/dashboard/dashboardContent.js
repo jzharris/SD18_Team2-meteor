@@ -18,7 +18,7 @@ Template.dashboardContent.helpers({
         return SortedTags.find().count() > 1 ? 's' : '';
     },
     recentNodes: function() {
-        return Nodes.find({}, {limit: 4, sort: {'gps.timestamp': -1}}).fetch();
+        return Nodes.find({}, {limit: 3, sort: {'gps.timestamp': -1}}).fetch();
     },
     croppedLat: function() {
         return this.gps.lat ? (this.gps.lat).toFixed(5) : null;

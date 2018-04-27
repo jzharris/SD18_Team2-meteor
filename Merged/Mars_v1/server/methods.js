@@ -1,74 +1,85 @@
-import {Meteor} from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor';
 
 Meteor.methods({
-    'resetNodes': function () {
+    'resetNodes': function() {
         Nodes.remove({});
     },
-    'resetTags': function () {
+    'resetTags': function() {
         Tags.remove({});
     },
 
     // ddp client methods:
-    'assignNode': function () {
+    'assignNode': function() {
         return assignNode();
     },
-    'arduinoStatus': function (nodeID, status) {
-        console.log('Node' + nodeID + "'s" + ' arduino status changed to ' + status + '!');
+    'arduinoStatus': function(nodeID, status) {
+        console.log('Node'+nodeID+"'s"+' arduino status changed to '+status+'!');
     },
-    'getStatus': function () {
+    'getStatus': function(){
         return Status.findOne({});
     },
-    'arduinoMessage': function (message) {
+    'arduinoMessage': function(message) {
         console.log('Message from Arduino: ');
         var result = "";
         var i;
-        for (i = 4; i < message.length; i++) {
+        for(i = 4; i < message.length; i++) {
             result += String.fromCharCode(message[i]);
         }
         console.log("\n\n" + result + "\n\n");
 
         var json = JSON.parse(result);
 
-        if (json['p']) {
+        if(json['p']) {
             var packet = json['p'];
-            var time = null;
-            if (packet['n'] && packet['l'] && packet['ti']) {
-                var gpstime = parseInt(packet['ti']);
-                if (typeof gpstime !== 'undefined') {
-                    time = new Date();
-                    time.setHours(0, 0, 0, 0);
-                    time.setSeconds(time.getSeconds() + parseInt(packet['ti']));
-                } else {
-                    time = new Date();
-                }
+            if(packet['n'] && packet['l'] && packet['ti']) {
+              var gpstime = parseInt(packet['ti']);
+              if (typeof gpastime !== 'undefined'){
+                var t = new Date();
+                t.setHours(0,0,0,0);
+                t.setSeconds(t.getSeconds() + parseInt(packet['ti']));
+              } else {
+                var t = new Date();
+              }
 
                 var nodeSubmission = {
                     nodeID: packet['n'],
                     gps: {
                         lat: packet['l']['la'],
                         lon: packet['l']['lo'],
-                        timestamp: time
+                        timestamp: t
                     }
                 };
                 Nodes.insert(nodeSubmission);
                 console.log(nodeSubmission);
-            } else {
+            } else {ta
                 console.log('not a valid node packet');
             }
 
-            if (packet['n'] && packet['ta']) {
-                for (var t in packet['ta']) {
+            if(packet['n'] && packet['ta']) {
+                for(var t in packet['ta']) {
                     var tagSubmission = {
-                        nodeID: packet['n'],
-                        tagID: parseInt(packet['ta'][t].I),
-                        sent: time,
-                        measurements: {
-                            label: packet['ta'][t].c,
-                            data: parseInt(packet['ta'][t].s[0])
-                        }
-                    };
+                      nodeID: packet['n'].toString(),
+                      tagID: parseInt(packet['ta'][t].I),
+                      measurements: {
+                        label: packet['ta'][t].c,
+                        data: ((packet['ta'][t].s > 0) ? parseInt(packet['ta'][t].s[0]) : 0)
+                      }
+                    }
                     console.log(tagSubmission);
                     Tags.insert(tagSubmission);
+                    // var tagSubmission = {
+                    //     nodeID: packet['n'],
+                    //     tagID: parseInt(message[3]),
+                    //     measurements: []
+                    // };
+                    // tagSubmission.measurements.push({
+                    //     type: 'Sensor',
+                    //     label: 'Count',
+                    //     data: [{
+                    //         rssi: parseInt(packet['ta'][t].R),
+                    //         value: packet['ta'][t].s.length > 2 ? parseInt(packet['ta'][t].s[2]) : 0
+                    //     }]
+                    // });
                 }
             }
         } else {
@@ -82,7 +93,7 @@ Meteor.methods({
     //     console.log(parsed);
     // },
 
-    'downloadCSV': function (origin) {
+    'downloadCSV': function(origin) {
         const collection = collectAssets(origin);
         const heading = true;  // Optional, defaults to true
         const delimiter = ","; // Optional, defaults to ",";
@@ -90,20 +101,20 @@ Meteor.methods({
         return exportcsv.exportToCSV(collection, heading, delimiter);
     },
 
-    'randomNodeId': function () {
-        randomNode = SortedNodes.aggregate([
-            {$sample: {size: 3}},
-            {$project: {_id: 1}}
-        ]);
-        //console.log(randomNode);
-        return randomNode
+    'randomNodeId': function(){
+      randomNode = SortedNodes.aggregate([
+        {$sample: {size: 3}},
+        {$project: {_id: 1}}
+      ]);
+      //console.log(randomNode);
+      return randomNode
 
     },
 
-    'fakeNode': function (id) {
+    'fakeNode': function(id) {
         fakenode(id);
     },
-    'fakeTag': function (id) {
+    'fakeTag': function(id) {
         faketag(id);
     }
 

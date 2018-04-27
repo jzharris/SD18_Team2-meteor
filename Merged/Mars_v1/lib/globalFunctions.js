@@ -31,9 +31,7 @@ tag = function(nodeID, tagID) {
         measure.push({
             type: 'Type',
             label: 'Label',
-            data: {
-                45
-            }
+            data: '45'
         });
     }
 
@@ -116,7 +114,7 @@ Icon = function(name,color) {
       this.scale = 1;
     } else {
       this.path = "M0,20L10,0L20,20z";
-      this.scale = 0.8;
+      this.scale = 1;
     }
     this.fillColor = color;
     this.fillOpacity = 1;

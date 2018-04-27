@@ -117,6 +117,8 @@ function groupTagsbyID() {
 
           measurements: {$push: "$measurements"},
 
+          tagtime: {$push: "$tagtime"},
+
           lat: {$avg: "$lat"},
 
           lon: {$avg: "$lon"}
@@ -126,7 +128,8 @@ function groupTagsbyID() {
         "tagID": 1,
         "nodeID": 1,
         "count": 1,
-        "measurements": {$arrayElemAt: ["$measurements", 0]},
+        "measurements": 1,
+        "tagtime": 1,
         "pos.lat": "$lat",
         "pos.lon": "$lon",
         "pos.timestamp": new Date(),

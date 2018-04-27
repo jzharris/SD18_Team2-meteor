@@ -79,14 +79,21 @@
            <span class = "item-timestamp">
              {{timestamp}}
            </span>
-           <span class = "item-label">
-             Latitude:
+
+           <span class = "item-value">
+             <span class = "item-label">
+               Latitude:
+             </span>
+             {{lat}}
            </span>
-           {{lat}}
-           <span class = "item-label">
-             Longitude:
+
+           <span class = "item-value">
+             <span class = "item-label">
+               Longitude:
+             </span>
+            {{lon}}
            </span>
-           {{lon}}
+
          </li>
        </ul>
        {{/each}}
@@ -124,6 +131,7 @@
      </div>
      <div id=tag{{_id}} class="panel-collapse collapse">
        <ul class="list-group">
+         {{#each measurements}}
          <li class="list-group-item">
            <span class = "item-timestamp">
              {{pos.timestamp}}
@@ -145,12 +153,13 @@
 
            <span class = "item-value">
              <span class = "item-label">
-               {{measurements.label}} :
+               {{label}} :
              </span>
-             {{measurements.data}}
+             {{data}}
            </span>
 
          </li>
+         {{/each}}
        </ul>
        <div class="panel-footer">
          Tag ID:  {{_id}}

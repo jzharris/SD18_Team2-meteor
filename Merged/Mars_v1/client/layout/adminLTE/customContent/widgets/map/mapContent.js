@@ -414,7 +414,7 @@ Template.mapContent.onCreated(function() {
           });
 
           stopBtn.addEventListener('click', function() {
-            interrogate(100); // Send stop interrogation command
+            interrogate("100"); // Send stop interrogation command
           });
 
           map.instance.controls[google.maps.ControlPosition.LEFT_BOTTOM].push($('#intCtrl')[0])
@@ -525,8 +525,8 @@ Template.mapContent.helpers({
             // Map initialization options
             return {
                 center: new google.maps.LatLng(34.066109, -106.907439),
-                zoom: 0, // 18
-                minZoom: 0, // 16
+                zoom: 18, // 18
+                minZoom: 16, // 16
                 disableDefaultUI: true,
                 fullscreenControl: true,
                 styles: [
