@@ -4,12 +4,6 @@ import { Session } from 'meteor/session'
 Template.mapContent.onCreated(function() {
     var self = this;
 
-/*    Meteor.setInterval(function() {
-        console.log('interval');
-
-
-    }, 60000);*/
-
 // ================================================
 // Function to run once googlemaps api is ready
     GoogleMaps.ready('map', function(map) {
@@ -149,55 +143,6 @@ Template.mapContent.onCreated(function() {
             }});
 
         });
-    //===================================================
-    // FOR DEBUGING
-        nodeLayer.addListener('rightclick',
-            function (event) {
-              Nodes.find({nodeID: event.feature.getId()}).forEach(
-                function(document){
-                    Nodes.remove(document._id);
-                });
-            });
-
-        tagLayer.addListener('rightclick',
-          function (event) {
-            Tags.find({tagID: event.feature.getId()}).forEach(
-              function(document){
-                  Tags.remove(document._id);
-              });
-        });
-
-        map.instance.addListener('click',
-            function (event) {
-              Nodes.insert({
-                  nodeID: Math.floor(Math.random()*9),
-                  nodeVersion: '1.0.0',
-                  nodeType: 'Tester',
-                  battery: {
-                      voltage: Random.fraction()*10,
-                      amperage: Random.fraction()*2,
-                      timestamp: new Date()
-                  },
-                  gps: {
-                    lat: event.latLng.lat(),
-                    lon: event.latLng.lng(),
-                    timestamp: new Date()
-                  }
-              });
-
-            });
-
-        map.instance.addListener('rightclick',
-            function (event) {
-              var tagid = id;
-
-              for (i in result){
-                //console.log(result[i]._id);
-                var newtag = tag(result[i]._id,tagid);
-                //console.log(newtag);
-                Tags.insert(newtag);
-              }
-            });
     //===================================================
     // Google Maps listeners for displaying infoboxes
         // Nodes: Mouseover event
