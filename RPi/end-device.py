@@ -10,6 +10,36 @@ import os           # OS interface library (clear, bash commands, etc)
 import json
 import smbus
 from itertools import izip_longest
+
+nodeID = 4
+
+########################################################################################################################
+########################################################################################################################
+#Bluetooth wrapper
+
+# ReachView code is placed under the GPL license.
+# Written by Egor Fedorov (egor.fedorov@emlid.com)
+# Copyright (c) 2015, Emlid Limited
+# All rights reserved.
+
+# If you are interested in using ReachView code as a part of a
+# closed source project, please contact Emlid Limited (info@emlid.com).
+
+# This file is part of ReachView.
+
+# ReachView is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# ReachView is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with ReachView.  If not, see <http://www.gnu.org/licenses/>.
+
 class BluetoothctlError(Exception):
 	"""This exception is raised, when bluetoothctl fails to start."""
 	pass
@@ -167,9 +197,9 @@ class Bluetoothctl:
 			success = True if res == 1 else False
 			return success
 
-
-#############################################################################################################################################
-#Tag Team Code
+########################################################################################################################
+########################################################################################################################
+#Tag Team Bluetooth interface
 
 class My_blueTooth():
 	def __init__(self):
@@ -194,7 +224,7 @@ class My_blueTooth():
 	def blue_tooth_parse(self):
 		i=0
 		bluetooth_string=''
-		tag_list=[]
+		tag_list=''
 		while i<len(self.devices):
 			name = self.devices[i]['name']
 			if name[0:4]=="tags":
@@ -202,19 +232,25 @@ class My_blueTooth():
 				RSSI= info[-2].replace('\t','')
 				if RSSI[0:4]=="RSSI":
 					bluetooth_string = ""
-					myrssi=RSSI[5:]
+					myrssi=int(RSSI[7:])
 					name=name[4:]
 					while len(name)!=0:
-						bluetooth_string=bluetooth_string+name[0:4]+'\t'
+						bluetooth_string=bluetooth_string+name[0:4].replace('0', '')+' '
 						name= name[4:]
 					print bluetooth_string
-					bluetooth_list=bluetooth_string.split('\t')
+					tag_list = tag_list + bluetooth_string + ';'
+					'''bluetooth_list=bluetooth_string.split('\t')
 					bluetooth_list=bluetooth_list[:len(bluetooth_list)-1]
-					category=bluetooth_list[0]
-					tagid=bluetooth_list[1]
+					category=bluetooth_list[0][0]
+					tagid=int(bluetooth_list[1])
 					sensordata=bluetooth_list[2:]
-					tag_list.append({'c':category,'I':tagid,'R':myrssi,'s':sensordata})
+					for z in range(0, len(sensordata)):
+						sensordata[z] = int(sensordata[z])
+					tag_list.append({'c':category,'I':tagid,'R':myrssi,'s':sensordata})'''
 			i=i+1
+		tag_list = tag_list.replace('volt', 'v')
+		tag_list = tag_list.replace('cnts', 'c')
+		print tag_list
 		return tag_list
 
 	def send_interrogation(self, channel): #sends out interrogation signal and returns tags scanned
@@ -244,8 +280,8 @@ class My_blueTooth():
 		print tags
 		return tags
 
-###############################################################################################################################################
-###############################################################################################################################################
+########################################################################################################################
+########################################################################################################################
 #Node Team JSON
 """TagId
 Sensor
@@ -288,7 +324,8 @@ class MyI2C:
                         time.sleep(.1)
 
 
-###############################################################################################################################################
+########################################################################################################################
+########################################################################################################################
 #Node Team GPS
 #! /usr/bin/python
 # Thomas Dearing, Adapted from Online Resources
@@ -577,11 +614,11 @@ class GPS:
 		myfix="{0:d}".format(myGPS.fix)
 		if(self.fix != 0 ):
 			if myGPS.Lat_hem =='N':
-				mylat=self.Lat_deg+self.Lat_min/60#,myGPS.Lat_hem]#"{0:<4d}deg {1:<7.4f}min {2}".format(myGPS.Lat_deg,myGPS.Lat_min,myGPS.Lat_hem)
+				mylat=self.Lat_deg+self.Lat_min/60
 			else:
 				mylat=-(self.Lat_deg+self.Lat_min/60)
 			if myGPS.Lon_hem =='W':
-				mylon=-(self.Lon_deg+self.Lon_min/60)#),myGPS.Lon_hem]#"{0:<4d}deg {1:<7.4f}min {2}".format(myGPS.Lon_deg,myGPS.Lon_min,myGPS.Lon_hem)
+				mylon=-(self.Lon_deg+self.Lon_min/60)
 			else:
 				mylon=self.Lon_deg+self.Lon_min/60
 
@@ -591,11 +628,10 @@ class GPS:
 			# Print to file
 			mylat="NaN"
 			mylon="NaN"
-		return mytime, {'la': mylat, 'lo': mylon}
+		return mytime, {'a': mylat, 'o': mylon}
 
 
 
-nodeID 				= 2
 tostore 			= {}
 ARDU_ADDR			= 0x41  # 'A' for arduino
 RPI_CMD_PING		= 0x00  # Ping for bootup				Payload: 0 bytes
@@ -628,9 +664,9 @@ def Enable_Interrogate(channel):
 	GPIO.output(21, 0)
 	busy = False
 
-
-#---------------------------------------------------------------------------
-
+########################################################################################################################
+########################################################################################################################
+# Main program
 
 if __name__ == "__main__":
 	myI2c = MyI2C()

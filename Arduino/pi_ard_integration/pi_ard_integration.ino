@@ -53,7 +53,7 @@ char ping_count = 0;             // Flag for pinging
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
 // Define Node Address
-#define NodeAddr 1
+#define NodeAddr 4
 
 int16_t packetnum = 0;  // packet counter, we increment per xmission
 uint8_t i, node_read,count;
@@ -269,11 +269,11 @@ void Rx(){
         }
       } else {
         // Not meant for me - propagate message if have not already done so
-        if(*ToAddr_str != 's' && ToAddr != PrevTo && FromAddr != PrevFrom) {
-          PrevTo = ToAddr;
-          PrevFrom = FromAddr;
-          rf95.send(transmit_string, sizeof(transmit_string));
-        }
+//        if(*ToAddr_str != 's' && ToAddr != PrevTo && FromAddr != PrevFrom) {
+//          PrevTo = ToAddr;
+//          PrevFrom = FromAddr;
+//          rf95.send(transmit_string, sizeof(transmit_string));
+//        }
       }
     }
   }
