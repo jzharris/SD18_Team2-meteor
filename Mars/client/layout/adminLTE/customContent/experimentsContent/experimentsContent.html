@@ -1,0 +1,74 @@
+<template name="experimentContent">
+
+    <!-- Main content -->
+    <section class="content" style="padding-left: 25px; padding-top: 0;  min-height: {{sectionHeight}};">
+
+        <!-- Your Page Content Here -->
+
+        <div class="row">
+            <!--<div class="row">-->
+            <div class="col-xs-12" style="padding-left: 0; width:100%">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>
+                        Experiment 1
+                        <small>Short description of this simulation</small>
+                    </h1>
+                </section>
+
+                <section class="content" style="padding-bottom: 0;">
+
+                    <ul class="nav nav-tabs">
+                        <li class="active" style="width: 33%">
+                            <a data-toggle="tab" href="#home">
+                                <i class="fa fa-dashboard"></i>&nbsp;&nbsp;Dashboard
+                            </a>
+                        </li>
+                        <li style="width: 33%">
+                            <a data-toggle="tab" href="#menu1">
+                                <i class="fa fa-map"></i>&nbsp;&nbsp;Map
+                            </a>
+                        </li>
+                        <!--<li style="width: 25%">-->
+                            <!--<a data-toggle="tab" href="#menu2">-->
+                                <!--<i class="fa fa-pie-chart"></i>&nbsp;&nbsp;Charts-->
+                            <!--</a>-->
+                        <!--</li>-->
+                        <li style="width: 34%">
+                            <a data-toggle="tab" href="#menu3">
+                                <i class="fa fa-laptop"></i>&nbsp;&nbsp;Event Log
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" style="background: white; width:100%; height:{{tabPanelHeight}}; border-left: 1px solid #ddd; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd;">
+                        <div id="home" class="tab-pane fade in active">
+                            <section class="content">
+                                {{> dashboardContent}}
+                            </section>
+                        </div>
+                        <div id="menu1" class="tab-pane fade">
+                            <section class="content">
+                                {{> mapContent}}
+                            </section>
+                        </div>
+                        <!--<div id="menu2" class="tab-pane fade">-->
+                            <!--<section class="content">-->
+                                <!--{{> chartsContent}}-->
+                            <!--</section>-->
+                        <!--</div>-->
+                        <div id="menu3" class="tab-pane fade">
+                            <section class="content">
+                                {{> eventLogContent}}
+                            </section>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <!--</div>-->
+
+        </div>
+
+    </section>
+
+</template>
